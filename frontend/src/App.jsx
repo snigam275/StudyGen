@@ -12,6 +12,12 @@ import FlashcardsView from "./FlashcardsView"
 import QuizView from "./QuizView"
 import Chatbot from "./Chatbot"
 
+const getApiUrl = (path) => {
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  const base = isLocal ? "http://localhost:8000" : (import.meta.env.VITE_API_URL || "https://studygen-backend.onrender.com")
+  return `${base}${path}`
+}
+
 function App() {
   // Navigation active tab: "dashboard", "summary", "flashcards", "quiz", "recent-files", "bookmarks", "trash", "study-preferences"
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -329,25 +335,18 @@ function App() {
 
     let response;
     try {
-      response = await fetch(`http://localhost:8000/${endpoint}${queryPath}`, {
+      response = await fetch(getApiUrl(`/${endpoint}${queryPath}`), {
         method: "POST",
         body: formData,
       })
     } catch (err) {
-      console.warn("Localhost fetch failed, trying loopback 127.0.0.1 fallback...", err)
-      try {
-        response = await fetch(`http://127.0.0.1:8000/${endpoint}${queryPath}`, {
-          method: "POST",
-          body: formData,
-        })
-      } catch (fallbackErr) {
-        const errMsg = "Could not connect to the backend server. Please verify the Python backend is running on port 8000."
-        if (endpoint === "summary") setSummaryResult({ error: errMsg })
-        else if (endpoint === "flashcards") setFlashcardResult({ error: errMsg })
-        else if (endpoint === "quiz") setQuizResult({ error: errMsg })
-        setLoading(false)
-        return
-      }
+      console.warn("API request failed:", err)
+      const errMsg = "Could not connect to the backend server. Please verify the backend is running and correct VITE_API_URL is configured."
+      if (endpoint === "summary") setSummaryResult({ error: errMsg })
+      else if (endpoint === "flashcards") setFlashcardResult({ error: errMsg })
+      else if (endpoint === "quiz") setQuizResult({ error: errMsg })
+      setLoading(false)
+      return
     }
 
     if (response && response.ok) {

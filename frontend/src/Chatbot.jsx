@@ -2,6 +2,12 @@ import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MessageSquare, Send, X, Sparkles, HelpCircle, FileText, Lightbulb, Smile, Plus, ArrowUpRight, ChevronsLeftRight } from "lucide-react"
 
+const getApiUrl = (path) => {
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  const base = isLocal ? "http://localhost:8000" : (import.meta.env.VITE_API_URL || "https://studygen-backend.onrender.com")
+  return `${base}${path}`
+}
+
 export default function Chatbot({ file, isInline = false, chatWidth = 360, setChatWidth }) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
@@ -95,29 +101,20 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
     let response;
     
     try {
-      // First try localhost:8000
-      response = await fetch(`http://localhost:8000/chat?question=${escText}`, {
+      response = await fetch(getApiUrl(`/chat?question=${escText}`), {
         method: "POST",
         body: formData,
       })
     } catch (err) {
-      console.warn("Localhost chat query failed, trying 127.0.0.1 fallback...", err)
-      try {
-        // Fallback to 127.0.0.1:8000
-        response = await fetch(`http://127.0.0.1:8000/chat?question=${escText}`, {
-          method: "POST",
-          body: formData,
-        })
-      } catch (fallbackErr) {
-        const errorMsg = {
-          sender: "bot",
-          text: "Could not connect to the backend server. Please verify the backend is running on port 8000.",
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-        setMessages(prev => [...prev, errorMsg])
-        setIsLoading(false)
-        return
+      console.error("Chat API error:", err)
+      const errorMsg = {
+        sender: "bot",
+        text: "Could not connect to the backend server. Please verify the backend is running.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
+      setMessages(prev => [...prev, errorMsg])
+      setIsLoading(false)
+      return
     }
 
     if (response && response.ok) {
