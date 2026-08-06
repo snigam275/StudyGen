@@ -76,6 +76,24 @@ StudyGen is a premium, AI-powered study suite designed to transform your study m
 
 ---
 
+## 🌐 Live Unified Deployment (Render / Railway)
+
+You can host the **entire project** (both frontend and backend) on a **single web service** (e.g., Render or Railway) with a single click. In this configuration, the FastAPI backend compiles the React app and serves the static files natively.
+
+### Deployment Steps on Render (Free Plan):
+1.  Go to [Render](https://render.com/) and click **New +** ➔ **Web Service**.
+2.  Import your `StudyGen` GitHub repository.
+3.  Set the following settings:
+    *   **Build Command**: `npm run build --prefix frontend && pip install -r requirements.txt`
+    *   **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+4.  Under **Environment Variables**, add:
+    *   `GEMINI_API_KEY`: `your_gemini_api_key_here`
+5.  Click **Create Web Service**. 
+
+Once deployed, your live site URL will serve the compiled React app directly and route all API calls natively, requiring **zero cross-origin configuration**!
+
+---
+
 ## 🔒 Security & Local Persistence
 *   **Local Storage**: All document metrics, bookmarks, and quiz scores are stored in your browser's local storage so that your notes remain completely private and persist across reloads.
 *   **Security Safety**: A root `.gitignore` blocks sensitive variables (`.env`) and local environments (`.venv/`) from accidental commits.

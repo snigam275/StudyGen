@@ -1,10 +1,12 @@
 from io import BytesIO
-
 from typing import Optional
 import json
+import os
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pypdf import PdfReader
 
 from models import Summary, Flashcard, MCQ
@@ -94,3 +96,18 @@ async def chat_endpoint(question: str, file: UploadFile = File(...)):
         if "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
             raise HTTPException(status_code=429, detail="Gemini API Quota Exceeded (Free Tier limit: 20 requests/day). Please wait a moment or check your billing plan.")
         raise HTTPException(status_code=500, detail=f"LLM Error: {err_msg}")
+
+
+# Serve static frontend files built by Vite
+dist_dir = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+if os.path.exists(dist_dir):
+    app.mount("/assets", StaticFiles(directory=os.path.join(dist_dir, "assets")), name="static")
+
+    @app.get("/{file_path:path}")
+    async def read_index(file_path: str):
+        # Allow static files in public folder (like favicon, icons, etc.) to be served directly
+        full_path = os.path.join(dist_dir, file_path)
+        if file_path and os.path.exists(full_path):
+            return FileResponse(full_path)
+        # Default route for Single Page Application (React Router)
+        return FileResponse(os.path.join(dist_dir, "index.html"))
