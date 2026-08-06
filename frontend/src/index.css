@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --transition-speed: 0.3s;
+}
+
+/* Bioluminescent Deep Sea Dark Theme - Premium Oceanic Blue View */
+[data-theme="dark"] {
+  --bg-base: #030811;        /* Very deep navy-black blue base */
+  --bg-sidebar: #060e1a;     /* Deeper ocean navy slate sidebar background */
+  --bg-card: #0a1628;        /* Coral reef slate blue card background */
+  --bg-input: #040b15;       /* Deep marine abyss input background */
+  --text-color: #e2f1ff;     /* Seaglass / light foam blue text */
+  --text-muted: #8ea8c3;     /* Slate ocean foam muted text */
+  --primary: #00a4e4;        /* Bioluminescent cyan water primary color */
+  --primary-hover: #008cc4;  /* Deep marine blue primary hover */
+  --primary-glow: rgba(0, 164, 228, 0.35);
+  --accent: #33ffd0;         /* Neon aqua seafoam accent */
+  --success-bg: rgba(51, 255, 208, 0.1);
+  --success-border: rgba(51, 255, 208, 0.3);
+  --success-text: #33ffd0;
+  --error-bg: rgba(244, 63, 94, 0.1);
+  --error-border: rgba(244, 63, 94, 0.3);
+  --error-text: #f43f5e;
+  --border-color: rgba(0, 164, 228, 0.25);
+  --shadow-color: rgba(2, 6, 12, 0.55);
+  --btn-inactive: rgba(0, 164, 228, 0.08);
+}
+
+/* Creamish-Yellow and Light Brown Light Theme */
+[data-theme="light"] {
+  --bg-base: #f9f6e9;        /* Creamish Yellow base background */
+  --bg-sidebar: #f2ebd5;     /* Warm Creamish Yellow sidebar background */
+  --bg-card: #fdfbf3;        /* Very Light Yellow-Cream card background */
+  --bg-input: #e9e1c4;       /* Warm Light Yellow-Brown input background */
+  --text-color: #3d2b1f;     /* Legible Dark Brown text */
+  --text-muted: #7a6652;     /* Muted Warm Brown text */
+  --primary: #8b5a2b;        /* Warm Medium Brown primary brand color */
+  --primary-hover: #704822;  /* Slightly Darker Brown for hover */
+  --primary-glow: rgba(139, 90, 43, 0.2);
+  --accent: #cd853f;         /* Peru Brown / Amber accent */
+  --success-bg: rgba(132, 204, 22, 0.12);
+  --success-border: rgba(132, 204, 22, 0.3);
+  --success-text: #65a30d;
+  --error-bg: rgba(244, 63, 94, 0.1);
+  --error-border: rgba(244, 63, 94, 0.25);
+  --error-text: #e11d48;
+  --border-color: rgba(139, 90, 43, 0.25);  /* Brownish border */
+  --shadow-color: rgba(61, 43, 31, 0.08);   /* Light shadowish color */
+  --btn-inactive: rgba(139, 90, 43, 0.06);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-base);
+  color: var(--text-color);
+  min-height: 100vh;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+  overflow: hidden; /* Prevent body scroll, layout uses column scroll scrollbars */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* 3D Flip Card Styles */
+.perspective-container {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.flip-card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.flip-card-front {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  box-shadow: 0 8px 32px 0 var(--shadow-color);
+}
+
+.flip-card-back {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: #ffffff;
+  transform: rotateY(180deg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 36px 0 var(--primary-glow);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+  opacity: 0.3;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
