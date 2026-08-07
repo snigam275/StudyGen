@@ -12,6 +12,55 @@ import FlashcardsView from "./FlashcardsView"
 import QuizView from "./QuizView"
 import Chatbot from "./Chatbot"
 
+const DB_NAME = "StudyGenDB"
+const STORE_NAME = "pdfFiles"
+
+const getDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1)
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME)
+      }
+    }
+    request.onsuccess = (e) => resolve(e.target.result)
+    request.onerror = (e) => reject(e.target.error)
+  })
+}
+
+const savePdfBinary = async (name, file) => {
+  try {
+    const db = await getDB()
+    const tx = db.transaction(STORE_NAME, "readwrite")
+    const store = tx.objectStore(STORE_NAME)
+    store.put(file, name)
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve(true)
+      tx.onerror = () => reject(tx.error)
+    })
+  } catch (err) {
+    console.error("Failed to save PDF to IndexedDB:", err)
+    return false
+  }
+}
+
+const getPdfBinary = async (name) => {
+  try {
+    const db = await getDB()
+    const tx = db.transaction(STORE_NAME, "readonly")
+    const store = tx.objectStore(STORE_NAME)
+    const request = store.get(name)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  } catch (err) {
+    console.error("Failed to retrieve PDF from IndexedDB:", err)
+    return null
+  }
+}
+
 const getApiUrl = (path) => {
   if (window.location.port === "5173") {
     return `http://localhost:8000${path}`
@@ -204,11 +253,14 @@ function App() {
   }
 
   // Handle local PDF upload
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const uploadedFile = e.target.files[0]
     if (!uploadedFile) return
     
     try {
+      // Save binary to IndexedDB for persistent caching
+      await savePdfBinary(uploadedFile.name, uploadedFile)
+
       const newFileRecord = {
         name: uploadedFile.name,
         pages: Math.floor(Math.random() * 20) + 8, // Simulate page count
@@ -302,6 +354,9 @@ function App() {
       }
     } else {
       fileToSend = activeFile.fileObject
+      if (!fileToSend) {
+        fileToSend = await getPdfBinary(activeFile.name)
+      }
     }
 
     if (!fileToSend) {

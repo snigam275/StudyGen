@@ -9,6 +9,39 @@ const getApiUrl = (path) => {
   return path
 }
 
+const DB_NAME = "StudyGenDB"
+const STORE_NAME = "pdfFiles"
+
+const getDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1)
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME)
+      }
+    }
+    request.onsuccess = (e) => resolve(e.target.result)
+    request.onerror = (e) => reject(e.target.error)
+  })
+}
+
+const getPdfBinary = async (name) => {
+  try {
+    const db = await getDB()
+    const tx = db.transaction(STORE_NAME, "readonly")
+    const store = tx.objectStore(STORE_NAME)
+    const request = store.get(name)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  } catch (err) {
+    console.error("Failed to retrieve PDF from IndexedDB:", err)
+    return null
+  }
+}
+
 const parseInlineMarkdown = (text) => {
   const boldParts = text.split(/(\*\*.*?\*\*)/g);
   return boldParts.flatMap((part, i) => {
@@ -146,10 +179,16 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
         } catch (e) {
           console.error("Error reading mockup PDF", e)
         }
-      } else if (file.fileObject) {
-        formData.append("file", file.fileObject)
       } else {
-        formData.append("file", file)
+        let fileToSend = file.fileObject
+        if (!fileToSend) {
+          fileToSend = await getPdfBinary(file.name)
+        }
+        if (fileToSend) {
+          formData.append("file", fileToSend)
+        } else {
+          formData.append("file", file)
+        }
       }
     }
 
