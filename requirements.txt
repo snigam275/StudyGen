@@ -5,3 +5,4 @@ python-dotenv
 pypdf
 requests
 pydantic
+python-multipart
