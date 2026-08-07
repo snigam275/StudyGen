@@ -13,9 +13,10 @@ import QuizView from "./QuizView"
 import Chatbot from "./Chatbot"
 
 const getApiUrl = (path) => {
-  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-  const base = isLocal ? "http://localhost:8000" : (import.meta.env.VITE_API_URL || "https://studygen-backend.onrender.com")
-  return `${base}${path}`
+  if (window.location.port === "5173") {
+    return `http://localhost:8000${path}`
+  }
+  return path
 }
 
 function App() {

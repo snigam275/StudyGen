@@ -32,10 +32,21 @@ def read_pdf(data: bytes) -> str:
     return text
 
 
+# Resolve frontend static directory relative to this file
+frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+assets_dir = os.path.join(frontend_dist, "assets")
+
+# Mount React static compiled CSS/JS assets
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+
 @app.get("/")
-def root():
-    # Quick way to check the server is alive in your browser.
-    return {"status": "StudyGen backend is running"}
+async def root():
+    index_path = os.path.join(frontend_dist, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"status": "StudyGen API is running. Build the frontend first (npm run build) to serve the UI."}
 
 
 @app.post("/summary")
@@ -98,16 +109,25 @@ async def chat_endpoint(question: str, file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"LLM Error: {err_msg}")
 
 
-# Serve static frontend files built by Vite
-dist_dir = os.path.join(os.path.dirname(__file__), "frontend", "dist")
-if os.path.exists(dist_dir):
-    app.mount("/assets", StaticFiles(directory=os.path.join(dist_dir, "assets")), name="static")
+@app.get("/favicon.svg")
+async def favicon():
+    fav_path = os.path.join(frontend_dist, "favicon.svg")
+    if os.path.exists(fav_path):
+        return FileResponse(fav_path)
+    return {"error": "favicon not found"}
 
-    @app.get("/{file_path:path}")
-    async def read_index(file_path: str):
-        # Allow static files in public folder (like favicon, icons, etc.) to be served directly
-        full_path = os.path.join(dist_dir, file_path)
-        if file_path and os.path.exists(full_path):
-            return FileResponse(full_path)
-        # Default route for Single Page Application (React Router)
-        return FileResponse(os.path.join(dist_dir, "index.html"))
+
+@app.get("/icons.svg")
+async def icons():
+    icons_path = os.path.join(frontend_dist, "icons.svg")
+    if os.path.exists(icons_path):
+        return FileResponse(icons_path)
+    return {"error": "icons not found"}
+
+
+@app.get("/{catchall:path}")
+async def serve_frontend(catchall: str):
+    index_path = os.path.join(frontend_dist, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"message": "StudyGen API is running. Build the frontend first (npm run build) to serve the UI."}

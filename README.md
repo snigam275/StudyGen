@@ -59,38 +59,29 @@ StudyGen is a premium, AI-powered study suite designed to transform your study m
     uvicorn main:app --reload
     ```
 
-### 2. Frontend Setup
-1.  Navigate to the `frontend` folder:
+### 2. Running Unified Locally
+1.  Navigate to the `frontend` directory and compile static assets:
     ```bash
     cd frontend
-    ```
-2.  Install dependencies:
-    ```bash
     npm install
+    npm run build
     ```
-3.  Start the Vite local development server:
+2.  Navigate back to root and start uvicorn:
     ```bash
+    cd ..
+    uvicorn main:app --reload
+    ```
+3.  Open your browser and navigate to `http://localhost:8000` to access the full app running from the unified Python server.
+
+### 3. Alternative Local Development (Hot Reloading)
+For coding and styling with immediate UI hot-reloading:
+1.  Leave the backend running on `localhost:8000`.
+2.  Start the Vite dev server inside `frontend`:
+    ```bash
+    cd frontend
     npm run dev
     ```
-4.  Open your browser and navigate to `http://localhost:5173`.
-
----
-
-## 🌐 Live Unified Deployment (Render / Railway)
-
-You can host the **entire project** (both frontend and backend) on a **single web service** (e.g., Render or Railway) with a single click. In this configuration, the FastAPI backend compiles the React app and serves the static files natively.
-
-### Deployment Steps on Render (Free Plan):
-1.  Go to [Render](https://render.com/) and click **New +** ➔ **Web Service**.
-2.  Import your `StudyGen` GitHub repository.
-3.  Set the following settings:
-    *   **Build Command**: `npm run build --prefix frontend && pip install -r requirements.txt`
-    *   **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-4.  Under **Environment Variables**, add:
-    *   `GEMINI_API_KEY`: `your_gemini_api_key_here`
-5.  Click **Create Web Service**. 
-
-Once deployed, your live site URL will serve the compiled React app directly and route all API calls natively, requiring **zero cross-origin configuration**!
+3.  Open `http://localhost:5173`. Frontend API calls will automatically proxy to `http://localhost:8000`.
 
 ---
 

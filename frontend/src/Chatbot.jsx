@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion"
 import { MessageSquare, Send, X, Sparkles, HelpCircle, FileText, Lightbulb, Smile, Plus, ArrowUpRight, ChevronsLeftRight } from "lucide-react"
 
 const getApiUrl = (path) => {
-  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-  const base = isLocal ? "http://localhost:8000" : (import.meta.env.VITE_API_URL || "https://studygen-backend.onrender.com")
-  return `${base}${path}`
+  if (window.location.port === "5173") {
+    return `http://localhost:8000${path}`
+  }
+  return path
 }
 
 export default function Chatbot({ file, isInline = false, chatWidth = 360, setChatWidth }) {
