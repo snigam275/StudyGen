@@ -4,7 +4,7 @@ import {
   Sun, Moon, Upload, BrainCircuit, FileCheck, FileText, Layers, CheckSquare, Sparkles, 
   LayoutDashboard, Clock, Bookmark, Trash2, GitFork, MessageSquare, Settings, 
   Search, ChevronDown, MoreHorizontal, ArrowRight, HelpCircle,
-  Star, Trash, RotateCcw, User, Check, X, ChevronsLeftRight
+  Star, Trash, RotateCcw, User, Check, X, ChevronsLeftRight, Menu
 } from "lucide-react"
 import Orb from "./Orb"
 import SummaryView from "./SummaryView"
@@ -103,6 +103,8 @@ function App() {
 
   // Resizable chatbot panel width state
   const [chatWidth, setChatWidth] = useState(360)
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
+  const [chatSidebarCollapsed, setChatSidebarCollapsed] = useState(false)
 
   // Drag resizing handler for right chatbot panel
   const startResizeChat = (mouseDownEvent) => {
@@ -599,18 +601,20 @@ function App() {
 
         {/* COLUMN 1: LEFT SIDEBAR (Width: 280px) */}
         <div style={{
-          width: "280px",
-          minWidth: "280px",
+          width: leftSidebarCollapsed ? "0px" : "280px",
+          minWidth: leftSidebarCollapsed ? "0px" : "280px",
           background: theme === "dark" ? "rgba(6, 14, 26, 0.8)" : "rgba(242, 235, 213, 0.85)",
-          borderRight: "1px solid var(--border-color)",
+          borderRight: leftSidebarCollapsed ? "none" : "1px solid var(--border-color)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
-          padding: "24px 18px",
+          padding: leftSidebarCollapsed ? "0px" : "24px 18px",
           display: "flex",
           flexDirection: "column",
           gap: "20px",
           height: "100vh",
-          overflowY: "auto"
+          overflow: leftSidebarCollapsed ? "hidden" : "auto",
+          opacity: leftSidebarCollapsed ? 0 : 1,
+          transition: "all var(--transition-speed)"
         }}>
           {/* Highlighted Bold Logo Card */}
           <div style={{
@@ -741,41 +745,85 @@ function App() {
             justifyContent: "space-between",
             background: "transparent"
           }}>
-            {/* Search Bar */}
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              background: theme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
-              border: "1px solid var(--border-color)",
-              borderRadius: "12px",
-              padding: "8px 16px",
-              width: "360px"
-            }}>
-              <Search size={15} style={{ color: "var(--text-muted)" }} />
-              <input 
-                type="text" 
-                placeholder="Search notes, files, tools..." 
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+            {/* Sidebar toggle and Search Bar */}
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <button
+                onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+                title={leftSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 style={{
-                  border: "none",
-                  background: "transparent",
-                  outline: "none",
-                  fontSize: "12.5px",
+                  background: "var(--bg-input)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  width: "40px",
+                  height: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   color: "var(--text-color)",
-                  width: "100%"
+                  cursor: "pointer",
+                  marginRight: "16px",
+                  transition: "all 0.2s"
                 }}
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery("")}
-                  style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center" }}
-                >
-                  <X size={14} />
-                </button>
-              )}
+              >
+                <Menu size={18} />
+              </button>
+
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                background: theme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "12px",
+                padding: "8px 16px",
+                width: "360px"
+              }}>
+                <Search size={15} style={{ color: "var(--text-muted)" }} />
+                <input 
+                  type="text" 
+                  placeholder="Search notes, files, tools..." 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    outline: "none",
+                    fontSize: "12.5px",
+                    color: "var(--text-color)",
+                    width: "100%"
+                  }}
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center" }}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Chat Panel Toggle */}
+            <button
+              onClick={() => setChatSidebarCollapsed(!chatSidebarCollapsed)}
+              title={chatSidebarCollapsed ? "Expand Chat Panel" : "Collapse Chat Panel"}
+              style={{
+                background: "var(--bg-input)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "10px",
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--text-color)",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              <MessageSquare size={18} />
+            </button>
           </div>
 
           {/* MAIN SCROLLABLE PANEL */}
@@ -1503,17 +1551,25 @@ function App() {
                         boxShadow: "0 8px 32px var(--shadow-color)"
                       }}>
                         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                          <Layers size={36} style={{ color: "var(--primary)", marginBottom: "8px" }} />
-                          <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>AI Flashcards Generator</h3>
+                          {flashcardViewMode === "tree" ? (
+                            <GitFork size={36} style={{ color: "var(--accent)", marginBottom: "8px" }} />
+                          ) : (
+                            <Layers size={36} style={{ color: "var(--primary)", marginBottom: "8px" }} />
+                          )}
+                          <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
+                            {flashcardViewMode === "tree" ? "AI Mind Map Generator" : "AI Flashcards Generator"}
+                          </h3>
                           <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
-                            Configure and extract study card blocks from "{activeFile.name}".
+                            {flashcardViewMode === "tree" 
+                              ? `Configure and generate a visual conceptual map from "${activeFile.name}".`
+                              : `Configure and extract study card blocks from "${activeFile.name}".`}
                           </p>
                         </div>
 
                         <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
                           <div>
                             <label style={{ display: "block", fontSize: "12.5px", fontWeight: 700, marginBottom: "6px" }}>
-                              Number of Flashcards:
+                              {flashcardViewMode === "tree" ? "Number of Concepts:" : "Number of Flashcards:"}
                             </label>
                             <select 
                               value={numCards} 
@@ -1529,10 +1585,21 @@ function App() {
                                 outline: "none"
                               }}
                             >
-                              <option value={5}>5 Cards (Quick review)</option>
-                              <option value={10}>10 Cards (Standard deck)</option>
-                              <option value={15}>15 Cards (Thorough review)</option>
-                              <option value={20}>20 Cards (Deep study)</option>
+                              {flashcardViewMode === "tree" ? (
+                                <>
+                                  <option value={5}>5 Concepts (Quick Map)</option>
+                                  <option value={10}>10 Concepts (Standard Map)</option>
+                                  <option value={15}>15 Concepts (Detailed Map)</option>
+                                  <option value={20}>20 Concepts (Deep Map)</option>
+                                </>
+                              ) : (
+                                <>
+                                  <option value={5}>5 Cards (Quick review)</option>
+                                  <option value={10}>10 Cards (Standard deck)</option>
+                                  <option value={15}>15 Cards (Thorough review)</option>
+                                  <option value={20}>20 Cards (Deep study)</option>
+                                </>
+                              )}
                             </select>
                           </div>
                         </div>
@@ -1552,7 +1619,7 @@ function App() {
                             boxShadow: "0 4px 12px var(--primary-glow)"
                           }}
                         >
-                          Generate Flashcards
+                          {flashcardViewMode === "tree" ? "Generate Mind Map" : "Generate Flashcards"}
                         </button>
                       </div>
                     ) : (
@@ -2218,71 +2285,75 @@ function App() {
 
         {/* COLUMN 3: RIGHT PERSISTENT AI CHATBOT (Always pinned on the right) */}
         <div style={{
-          width: `${chatWidth}px`,
-          minWidth: `${chatWidth}px`,
+          width: chatSidebarCollapsed ? "0px" : `${chatWidth}px`,
+          minWidth: chatSidebarCollapsed ? "0px" : `${chatWidth}px`,
           position: "relative",
           background: theme === "dark" ? "rgba(6, 14, 26, 0.8)" : "rgba(242, 235, 213, 0.85)",
-          borderLeft: "1px solid var(--border-color)",
+          borderLeft: chatSidebarCollapsed ? "none" : "1px solid var(--border-color)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
-          padding: "24px 18px",
+          padding: chatSidebarCollapsed ? "0px" : "24px 18px",
           height: "100vh",
           display: "flex",
           flexDirection: "column",
           zIndex: 2,
-          transition: "background-color var(--transition-speed), border-color var(--transition-speed)"
+          overflow: chatSidebarCollapsed ? "hidden" : "visible",
+          opacity: chatSidebarCollapsed ? 0 : 1,
+          transition: "all var(--transition-speed)"
         }}>
           {/* Resize Handler (Puller) */}
-          <div
-            onMouseDown={startResizeChat}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: "-3px",
-              width: "6px",
-              height: "100%",
-              cursor: "col-resize",
-              zIndex: 999,
-              background: "transparent",
-              transition: "background 0.2s"
-            }}
-            title="Drag to resize chat panel"
-            className="chat-resizer-puller"
-          >
-            {/* Circular click stretcher button centered directly on the line */}
+          {!chatSidebarCollapsed && (
             <div
-              onClick={(e) => {
-                e.stopPropagation() // Stop dragging trigger
-                if (chatWidth >= 450) {
-                  setChatWidth(360)
-                } else {
-                  setChatWidth(600)
-                }
-              }}
-              onMouseDown={(e) => e.stopPropagation()} // Stop drag initiation
+              onMouseDown={startResizeChat}
               style={{
                 position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background: "var(--primary)",
-                border: "1.5px solid var(--border-color)",
-                color: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 4px 12px var(--primary-glow)",
-                transition: "all 0.2s"
+                top: 0,
+                left: "-3px",
+                width: "6px",
+                height: "100%",
+                cursor: "col-resize",
+                zIndex: 999,
+                background: "transparent",
+                transition: "background 0.2s"
               }}
-              title={chatWidth >= 450 ? "Shrink Chat Panel" : "Stretch Chat Panel"}
+              title="Drag to resize chat panel"
+              className="chat-resizer-puller"
             >
-              <ChevronsLeftRight size={13} />
+              {/* Circular click stretcher button centered directly on the line */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation() // Stop dragging trigger
+                  if (chatWidth >= 450) {
+                    setChatWidth(360)
+                  } else {
+                    setChatWidth(600)
+                  }
+                }}
+                onMouseDown={(e) => e.stopPropagation()} // Stop drag initiation
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: "var(--primary)",
+                  border: "1.5px solid var(--border-color)",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 12px var(--primary-glow)",
+                  transition: "all 0.2s"
+                }}
+                title={chatWidth >= 450 ? "Shrink Chat Panel" : "Stretch Chat Panel"}
+              >
+                <ChevronsLeftRight size={13} />
+              </div>
             </div>
-          </div>
+          )}
 
           <Chatbot file={activeFile} isInline={true} chatWidth={chatWidth} setChatWidth={setChatWidth} />
         </div>
