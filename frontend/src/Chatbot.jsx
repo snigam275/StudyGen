@@ -9,6 +9,59 @@ const getApiUrl = (path) => {
   return path
 }
 
+const parseInlineMarkdown = (text) => {
+  const boldParts = text.split(/(\*\*.*?\*\*)/g);
+  return boldParts.flatMap((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return [<strong key={`b-${i}`} style={{ fontWeight: 700, color: "var(--primary)" }}>{part.slice(2, -2)}</strong>];
+    }
+    const codeParts = part.split(/(`.*?`)/g);
+    return codeParts.map((subPart, j) => {
+      if (subPart.startsWith("`") && subPart.endsWith("`")) {
+        return (
+          <code key={`c-${i}-${j}`} style={{ background: "rgba(255,255,255,0.08)", padding: "2px 5px", borderRadius: "4px", fontFamily: "monospace", fontSize: "12px", color: "#ec4899" }}>
+            {subPart.slice(1, -1)}
+          </code>
+        );
+      }
+      return subPart;
+    });
+  });
+};
+
+const parseMarkdown = (text) => {
+  if (!text) return "";
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    let content = line;
+    if (content.startsWith("### ")) {
+      return <h4 key={i} style={{ fontSize: "14px", fontWeight: 700, margin: "10px 0 6px 0", color: "var(--primary)" }}>{parseInlineMarkdown(content.substring(4))}</h4>;
+    }
+    if (content.startsWith("## ")) {
+      return <h3 key={i} style={{ fontSize: "15px", fontWeight: 700, margin: "12px 0 6px 0", color: "var(--primary)" }}>{parseInlineMarkdown(content.substring(3))}</h3>;
+    }
+    if (content.startsWith("# ")) {
+      return <h2 key={i} style={{ fontSize: "16px", fontWeight: 700, margin: "14px 0 8px 0", color: "var(--primary)" }}>{parseInlineMarkdown(content.substring(2))}</h2>;
+    }
+    if (content.trim().startsWith("- ") || content.trim().startsWith("* ")) {
+      const cleanText = content.trim().substring(2);
+      return (
+        <ul key={i} style={{ margin: "4px 0 4px 16px", padding: 0, listStyleType: "disc" }}>
+          <li style={{ fontSize: "12.5px", lineHeight: "1.45" }}>{parseInlineMarkdown(cleanText)}</li>
+        </ul>
+      );
+    }
+    if (content.trim() === "") {
+      return <div key={i} style={{ height: "6px" }} />;
+    }
+    return (
+      <p key={i} style={{ margin: "0 0 8px 0", fontSize: "12.5px", lineHeight: "1.5" }}>
+        {parseInlineMarkdown(content)}
+      </p>
+    );
+  });
+};
+
 export default function Chatbot({ file, isInline = false, chatWidth = 360, setChatWidth }) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
@@ -21,6 +74,8 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
+
+  const hasUserChatted = messages.some(msg => msg.sender === "user")
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -203,6 +258,7 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
         {/* Chat Messages */}
         <div style={{
           flexGrow: 1,
+          minHeight: 0,
           overflowY: "auto",
           padding: "20px",
           display: "flex",
@@ -233,7 +289,7 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
                   wordBreak: "break-word",
                   boxShadow: isBot ? "0 2px 8px var(--shadow-color)" : "0 2px 8px var(--primary-glow)",
                 }}>
-                  {msg.text}
+                  {isBot ? parseMarkdown(msg.text) : msg.text}
                 </div>
                 <span style={{ fontSize: "9px", opacity: 0.4, marginTop: "4px" }}>
                   {msg.time}
@@ -252,10 +308,11 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
         </div>
 
         {/* Suggested Questions Section */}
-        <div style={{ padding: "0 16px 16px 16px" }}>
-          <h5 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)", marginBottom: "8px" }}>
-            Suggested Questions
-          </h5>
+        {!hasUserChatted && (
+          <div style={{ padding: "0 16px 16px 16px" }}>
+            <h5 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)", marginBottom: "8px" }}>
+              Suggested Questions
+            </h5>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {suggestions.map((s, idx) => (
               <button
@@ -300,6 +357,7 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
             ))}
           </div>
         </div>
+        )}
 
         {/* Input Form */}
         <form
@@ -437,6 +495,7 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
             {/* Chat Messages */}
             <div style={{
               flexGrow: 1,
+              minHeight: 0,
               overflowY: "auto",
               padding: "20px",
               display: "flex",
@@ -467,7 +526,7 @@ export default function Chatbot({ file, isInline = false, chatWidth = 360, setCh
                       wordBreak: "break-word",
                       boxShadow: isBot ? "0 2px 8px var(--glass-shadow)" : "0 2px 8px var(--primary-glow)",
                     }}>
-                      {msg.text}
+                      {isBot ? parseMarkdown(msg.text) : msg.text}
                     </div>
                     <span style={{ fontSize: "9px", opacity: 0.4, marginTop: "4px" }}>
                       {msg.time}
