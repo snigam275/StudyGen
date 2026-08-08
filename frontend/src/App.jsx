@@ -73,8 +73,10 @@ function App() {
   // Navigation active tab: "dashboard", "summary", "flashcards", "quiz", "recent-files", "bookmarks", "trash", "study-preferences"
   const [activeTab, setActiveTab] = useState("dashboard")
 
-  // Search query state for filtering file hub items dynamically
-  const [searchQuery, setSearchQuery] = useState("")
+  // Local search query states for specific tabs
+  const [recentSearchQuery, setRecentSearchQuery] = useState("")
+  const [bookmarksSearchQuery, setBookmarksSearchQuery] = useState("")
+  const [trashSearchQuery, setTrashSearchQuery] = useState("")
 
   // State Management for Multi-result storage
   const [summaryResult, setSummaryResult] = useState(null)
@@ -570,10 +572,6 @@ function App() {
     ? Math.round(activeQuizScores.reduce((a, b) => a + b, 0) / activeQuizScores.length) + "%" 
     : "0%"
 
-  // Resolve search query filtered lists
-  const filterByQuery = (list) => {
-    return list.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  }
 
   return (
     <div style={{ display: "flex", width: "100vw", height: "100vh", position: "relative", overflow: "hidden" }}>
@@ -681,33 +679,54 @@ function App() {
             background: theme === "dark" 
               ? "linear-gradient(135deg, rgba(0, 164, 228, 0.15) 0%, rgba(0, 140, 196, 0.15) 100%)" 
               : "linear-gradient(135deg, rgba(139, 90, 43, 0.12) 0%, rgba(205, 133, 63, 0.12) 100%)",
-            border: "1.5px solid var(--primary)",
+            border: "1.5px solid var(--border-color)",
             borderRadius: "16px",
             padding: "14px 16px",
             display: "flex",
             alignItems: "center",
-            gap: "10px",
-            boxShadow: "0 4px 15px var(--primary-glow)",
+            justifyContent: "space-between",
+            boxShadow: "0 4px 15px var(--shadow-color)",
             marginBottom: "4px"
           }}>
-            <div style={{
-              width: "38px",
-              height: "38px",
-              borderRadius: "10px",
-              background: "var(--primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#ffffff",
-              boxShadow: "0 0 10px var(--primary-glow)",
-              flexShrink: 0
-            }}>
-              <BrainCircuit size={20} />
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{
+                width: "38px",
+                height: "38px",
+                borderRadius: "10px",
+                background: "var(--primary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#ffffff",
+                boxShadow: "0 0 10px var(--primary-glow)",
+                flexShrink: 0
+              }}>
+                <BrainCircuit size={20} />
+              </div>
+              <div>
+                <h1 style={{ fontSize: "18.5px", fontWeight: 900, letterSpacing: "-0.5px", margin: 0, color: "var(--text-color)" }}>StudyGen</h1>
+                <span style={{ fontSize: "8.5px", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 900, color: "var(--primary)", display: "block", marginTop: "1px" }}>AI Study Suite</span>
+              </div>
             </div>
-            <div>
-              <h1 style={{ fontSize: "18.5px", fontWeight: 900, letterSpacing: "-0.5px", margin: 0, color: "var(--text-color)" }}>StudyGen</h1>
-              <span style={{ fontSize: "8.5px", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 900, color: "var(--primary)", display: "block", marginTop: "1px" }}>AI Study Suite</span>
-            </div>
+
+            <button
+              onClick={() => setLeftSidebarCollapsed(true)}
+              title="Collapse Sidebar"
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "var(--text-color)",
+                cursor: "pointer",
+                padding: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: 0.7,
+                transition: "opacity 0.2s"
+              }}
+            >
+              <Menu size={18} />
+            </button>
           </div>
 
           {/* Navigation Links */}
@@ -806,11 +825,37 @@ function App() {
             justifyContent: "space-between",
             background: "transparent"
           }}>
-            {/* Sidebar toggle and Search Bar */}
-            <div style={{ display: "flex", alignItems: "center", flexGrow: 1, marginRight: isMobile ? "8px" : "16px" }}>
+            {/* Sidebar toggle and Chat Panel Toggle aligned to opposite corners */}
+            <div style={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+              {leftSidebarCollapsed && (
+                <button
+                  onClick={() => setLeftSidebarCollapsed(false)}
+                  title="Expand Sidebar"
+                  style={{
+                    background: "var(--bg-input)",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: "10px",
+                    width: "40px",
+                    height: "40px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--text-color)",
+                    cursor: "pointer",
+                    marginRight: isMobile ? "8px" : "16px",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  <Menu size={18} />
+                </button>
+              )}
+            </div>
+
+            {/* Chat Panel Toggle */}
+            {chatSidebarCollapsed && (
               <button
-                onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                title={leftSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                onClick={() => setChatSidebarCollapsed(false)}
+                title="Expand Chat Panel"
                 style={{
                   background: "var(--bg-input)",
                   border: "1px solid var(--border-color)",
@@ -822,70 +867,13 @@ function App() {
                   justifyContent: "center",
                   color: "var(--text-color)",
                   cursor: "pointer",
-                  marginRight: isMobile ? "8px" : "16px",
+                  marginLeft: "auto",
                   transition: "all 0.2s"
                 }}
               >
-                <Menu size={18} />
+                <MessageSquare size={18} />
               </button>
-
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                background: theme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
-                border: "1px solid var(--border-color)",
-                borderRadius: "12px",
-                padding: "8px 16px",
-                flexGrow: 1,
-                maxWidth: isMobile ? "220px" : "360px"
-              }}>
-                <Search size={15} style={{ color: "var(--text-muted)" }} />
-                <input 
-                  type="text" 
-                  placeholder={isMobile ? "Search..." : "Search notes, files, tools..."}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    outline: "none",
-                    fontSize: "12.5px",
-                    color: "var(--text-color)",
-                    width: "100%"
-                  }}
-                />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery("")}
-                    style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center" }}
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Chat Panel Toggle */}
-            <button
-              onClick={() => setChatSidebarCollapsed(!chatSidebarCollapsed)}
-              title={chatSidebarCollapsed ? "Expand Chat Panel" : "Collapse Chat Panel"}
-              style={{
-                background: "var(--bg-input)",
-                border: "1px solid var(--border-color)",
-                borderRadius: "10px",
-                width: "40px",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--text-color)",
-                cursor: "pointer",
-                transition: "all 0.2s"
-              }}
-            >
-              <MessageSquare size={18} />
-            </button>
+            )}
           </div>
 
           {/* MAIN SCROLLABLE PANEL */}
@@ -1061,7 +1049,7 @@ function App() {
                     </div>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                      {filterByQuery(uploadedFiles.filter(f => !f.isDeleted)).slice(0, 3).map((f, i) => {
+                      {uploadedFiles.filter(f => !f.isDeleted).slice(0, 3).map((f, i) => {
                         const isActive = activeFile === f
                         return (
                           <div 
@@ -1153,9 +1141,9 @@ function App() {
                           </div>
                         )
                       })}
-                      {filterByQuery(uploadedFiles.filter(f => !f.isDeleted)).length === 0 && (
+                      {uploadedFiles.filter(f => !f.isDeleted).length === 0 && (
                         <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontSize: "13px" }}>
-                          {searchQuery ? "No files match your search query." : "No active files found. Upload a PDF using the bottom sidebar card to get started!"}
+                          No active files found. Upload a PDF to get started!
                         </div>
                       )}
                     </div>
@@ -2048,6 +2036,43 @@ function App() {
                     padding: "24px",
                     boxShadow: "0 4px 20px var(--shadow-color)"
                   }}>
+                    {/* Local search box */}
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      background: "var(--bg-input)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "12px",
+                      padding: "8px 14px",
+                      maxWidth: "320px",
+                      marginBottom: "16px"
+                    }}>
+                      <Search size={15} style={{ color: "var(--text-muted)" }} />
+                      <input 
+                        type="text" 
+                        placeholder="Search recent files..."
+                        value={recentSearchQuery}
+                        onChange={e => setRecentSearchQuery(e.target.value)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          outline: "none",
+                          fontSize: "12.5px",
+                          color: "var(--text-color)",
+                          width: "100%"
+                        }}
+                      />
+                      {recentSearchQuery && (
+                        <button 
+                          onClick={() => setRecentSearchQuery("")}
+                          style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center" }}
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+
                     <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                       <thead>
                         <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-muted)", fontSize: "12.5px" }}>
@@ -2059,7 +2084,7 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filterByQuery(uploadedFiles.filter(f => !f.isDeleted)).map((f, i) => {
+                        {uploadedFiles.filter(f => !f.isDeleted && f.name.toLowerCase().includes(recentSearchQuery.toLowerCase())).map((f, i) => {
                           const isActive = activeFile === f
                           return (
                             <tr key={i} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "13.5px", background: isActive ? "rgba(139, 90, 43, 0.04)" : "transparent" }}>
@@ -2119,9 +2144,9 @@ function App() {
                         })}
                       </tbody>
                     </table>
-                    {filterByQuery(uploadedFiles.filter(f => !f.isDeleted)).length === 0 && (
+                    {uploadedFiles.filter(f => !f.isDeleted && f.name.toLowerCase().includes(recentSearchQuery.toLowerCase())).length === 0 && (
                       <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", fontSize: "14px" }}>
-                        {searchQuery ? "No files match your search query." : "No files uploaded. Drag a file into the sidebar uploader card to add it!"}
+                        {recentSearchQuery ? "No files match your search query." : "No files uploaded. Drag a file into the sidebar uploader card to add it!"}
                       </div>
                     )}
                   </div>
@@ -2160,6 +2185,43 @@ function App() {
                     padding: "24px",
                     boxShadow: "0 4px 20px var(--shadow-color)"
                   }}>
+                    {/* Local search box */}
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      background: "var(--bg-input)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "12px",
+                      padding: "8px 14px",
+                      maxWidth: "320px",
+                      marginBottom: "16px"
+                    }}>
+                      <Search size={15} style={{ color: "var(--text-muted)" }} />
+                      <input 
+                        type="text" 
+                        placeholder="Search bookmarked files..."
+                        value={bookmarksSearchQuery}
+                        onChange={e => setBookmarksSearchQuery(e.target.value)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          outline: "none",
+                          fontSize: "12.5px",
+                          color: "var(--text-color)",
+                          width: "100%"
+                        }}
+                      />
+                      {bookmarksSearchQuery && (
+                        <button 
+                          onClick={() => setBookmarksSearchQuery("")}
+                          style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center" }}
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+
                     <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                       <thead>
                         <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-muted)", fontSize: "12.5px" }}>
@@ -2170,7 +2232,7 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filterByQuery(uploadedFiles.filter(f => f.isBookmarked && !f.isDeleted)).map((f, i) => {
+                        {uploadedFiles.filter(f => f.isBookmarked && !f.isDeleted && f.name.toLowerCase().includes(bookmarksSearchQuery.toLowerCase())).map((f, i) => {
                           const isActive = activeFile === f
                           return (
                             <tr key={i} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "13.5px" }}>
@@ -2230,9 +2292,9 @@ function App() {
                         })}
                       </tbody>
                     </table>
-                    {filterByQuery(uploadedFiles.filter(f => f.isBookmarked && !f.isDeleted)).length === 0 && (
+                    {uploadedFiles.filter(f => f.isBookmarked && !f.isDeleted && f.name.toLowerCase().includes(bookmarksSearchQuery.toLowerCase())).length === 0 && (
                       <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", fontSize: "14px" }}>
-                        {searchQuery ? "No files match your search query." : "No starred files. Click the star icon on any document in Dashboard or Recent Files to bookmark it!"}
+                        {bookmarksSearchQuery ? "No files match your search query." : "No starred files. Click the star icon on any document in Dashboard or Recent Files to bookmark it!"}
                       </div>
                     )}
                   </div>
@@ -2271,6 +2333,43 @@ function App() {
                     padding: "24px",
                     boxShadow: "0 4px 20px var(--shadow-color)"
                   }}>
+                    {/* Local search box */}
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      background: "var(--bg-input)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "12px",
+                      padding: "8px 14px",
+                      maxWidth: "320px",
+                      marginBottom: "16px"
+                    }}>
+                      <Search size={15} style={{ color: "var(--text-muted)" }} />
+                      <input 
+                        type="text" 
+                        placeholder="Search deleted files..."
+                        value={trashSearchQuery}
+                        onChange={e => setTrashSearchQuery(e.target.value)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          outline: "none",
+                          fontSize: "12.5px",
+                          color: "var(--text-color)",
+                          width: "100%"
+                        }}
+                      />
+                      {trashSearchQuery && (
+                        <button 
+                          onClick={() => setTrashSearchQuery("")}
+                          style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center" }}
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+
                     <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                       <thead>
                         <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-muted)", fontSize: "12.5px" }}>
@@ -2280,7 +2379,7 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filterByQuery(uploadedFiles.filter(f => f.isDeleted)).map((f, i) => (
+                        {uploadedFiles.filter(f => f.isDeleted && f.name.toLowerCase().includes(trashSearchQuery.toLowerCase())).map((f, i) => (
                           <tr key={i} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "13.5px" }}>
                             <td style={{ padding: "14px 16px", fontWeight: 600 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px", maxWidth: isMobile ? "120px" : "320px", overflow: "hidden" }}>
@@ -2346,9 +2445,9 @@ function App() {
                         ))}
                       </tbody>
                     </table>
-                    {filterByQuery(uploadedFiles.filter(f => f.isDeleted)).length === 0 && (
+                    {uploadedFiles.filter(f => f.isDeleted && f.name.toLowerCase().includes(trashSearchQuery.toLowerCase())).length === 0 && (
                       <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", fontSize: "14px" }}>
-                        {searchQuery ? "No files match your search query." : "Trash is empty."}
+                        {trashSearchQuery ? "No files match your search query." : "Trash is empty."}
                       </div>
                     )}
                   </div>
@@ -2576,7 +2675,7 @@ function App() {
             </div>
           )}
 
-          <Chatbot file={activeFile} theme={theme} isInline={true} chatWidth={chatWidth} setChatWidth={setChatWidth} />
+          <Chatbot file={activeFile} theme={theme} isInline={true} chatWidth={chatWidth} setChatWidth={setChatWidth} onCollapse={() => setChatSidebarCollapsed(true)} />
         </div>
 
       </div>

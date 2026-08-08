@@ -95,7 +95,7 @@ const parseMarkdown = (text) => {
   });
 };
 
-export default function Chatbot({ file, theme, isInline = false, chatWidth = 360, setChatWidth }) {
+export default function Chatbot({ file, theme, isInline = false, chatWidth = 360, setChatWidth, onCollapse }) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
     {
@@ -240,31 +240,11 @@ export default function Chatbot({ file, theme, isInline = false, chatWidth = 360
   }
 
   const suggestions = [
-    { 
-      text: "Summarize the active document", 
-      icon: <FileText size={14} style={{ color: theme === "dark" ? "#c084fc" : "#6d28d9" }} />, 
-      bg: theme === "dark" ? "rgba(192, 132, 252, 0.15)" : "rgba(109, 40, 217, 0.08)" 
-    },
-    { 
-      text: "Explain the main concepts of this file", 
-      icon: <Sparkles size={14} style={{ color: theme === "dark" ? "#60a5fa" : "#1d4ed8" }} />, 
-      bg: theme === "dark" ? "rgba(96, 165, 250, 0.15)" : "rgba(29, 78, 216, 0.08)" 
-    },
-    { 
-      text: "What are the key takeaways from these notes?", 
-      icon: <Lightbulb size={14} style={{ color: theme === "dark" ? "#fbbf24" : "#b45309" }} />, 
-      bg: theme === "dark" ? "rgba(251, 191, 36, 0.15)" : "rgba(180, 83, 9, 0.08)" 
-    },
-    { 
-      text: "Generate a practice quiz for me", 
-      icon: <HelpCircle size={14} style={{ color: theme === "dark" ? "#34d399" : "#047857" }} />, 
-      bg: theme === "dark" ? "rgba(52, 211, 153, 0.15)" : "rgba(4, 120, 87, 0.08)" 
-    },
-    { 
-      text: "Explain the most complex part of this document", 
-      icon: <Smile size={14} style={{ color: theme === "dark" ? "#f472b6" : "#be185d" }} />, 
-      bg: theme === "dark" ? "rgba(244, 114, 182, 0.15)" : "rgba(190, 24, 93, 0.08)" 
-    }
+    { text: "Summarize the active document", icon: <FileText size={14} style={{ color: "var(--primary)" }} />, bg: "var(--btn-inactive)" },
+    { text: "Explain the main concepts of this file", icon: <Sparkles size={14} style={{ color: "var(--primary)" }} />, bg: "var(--btn-inactive)" },
+    { text: "What are the key takeaways from these notes?", icon: <Lightbulb size={14} style={{ color: "var(--primary)" }} />, bg: "var(--btn-inactive)" },
+    { text: "Generate a practice quiz for me", icon: <HelpCircle size={14} style={{ color: "var(--primary)" }} />, bg: "var(--btn-inactive)" },
+    { text: "Explain the most complex part of this document", icon: <Smile size={14} style={{ color: "var(--primary)" }} />, bg: "var(--btn-inactive)" }
   ]
 
   // Persistent inline dashboard widget view
@@ -311,6 +291,27 @@ export default function Chatbot({ file, theme, isInline = false, chatWidth = 360
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <Sparkles size={15} style={{ color: "var(--primary)" }} />
+            {isInline && typeof onCollapse === "function" && (
+              <button
+                onClick={onCollapse}
+                title="Collapse Chat Panel"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-color)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "4px",
+                  marginLeft: "4px",
+                  opacity: 0.7,
+                  transition: "opacity 0.2s"
+                }}
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         </div>
 
