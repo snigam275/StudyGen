@@ -127,86 +127,87 @@ export default function MindmapView({ data, file }) {
       </div>
 
       {/* Mindmap Container */}
-      <div className="mindmap-container">
+      <div className="mindmap-container" style={{ overflowX: "auto", width: "100%", display: "flex", justifyContent: "flex-start" }}>
         
-        {/* Level 0: Root Node */}
-        <div className="mindmap-root-wrapper">
-          <div className={`mindmap-root-node ${matchesSearch(root.label) ? "mindmap-node-highlighted" : ""}`}>
-            <Sparkles size={14} style={{ marginRight: "6px", display: "inline", verticalAlign: "middle" }} />
-            <span style={{ verticalAlign: "middle" }}>{root.label || topic}</span>
+        {/* Safe Scroll Inner Unit */}
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: "max-content",
+          minWidth: "100%",
+          padding: "10px 40px",
+          margin: "0 auto",
+          position: "relative"
+        }}>
+          {/* Level 0: Root Node */}
+          <div className="mindmap-root-wrapper">
+            <div className={`mindmap-root-node ${matchesSearch(root.label) ? "mindmap-node-highlighted" : ""}`}>
+              <Sparkles size={14} style={{ marginRight: "6px", display: "inline", verticalAlign: "middle" }} />
+              <span style={{ verticalAlign: "middle" }}>{root.label || topic}</span>
+            </div>
+            {root.children && root.children.length > 0 && <div className="mindmap-root-stem" />}
           </div>
-          {root.children && root.children.length > 0 && <div className="mindmap-root-stem" />}
-        </div>
 
-        {/* Level 1 & 2: Branches and Leaves */}
-        <AnimatePresence>
-          {root.children && root.children.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mindmap-branches-container"
-            >
-              {root.children.map((branch) => {
-                const isCollapsed = !!collapsedBranches[branch.id]
-                const hasMatchInBranch = matchesSearch(branch.label) || 
-                  branch.children?.some(leaf => matchesSearch(leaf.label))
+          {/* Level 1 & 2: Branches and Leaves */}
+          <AnimatePresence>
+            {root.children && root.children.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mindmap-branches-container"
+              >
+                {root.children.map((branch) => {
+                  const isCollapsed = !!collapsedBranches[branch.id]
+                  const hasMatchInBranch = matchesSearch(branch.label) || 
+                    branch.children?.some(leaf => matchesSearch(leaf.label))
 
-                return (
-                  <div key={branch.id} className="mindmap-branch-column">
-                    {/* Branch Node Card */}
-                    <div 
-                      onClick={() => toggleBranch(branch.id)}
-                      className={`mindmap-branch-node ${isCollapsed ? "collapsed" : ""} ${
-                        matchesSearch(branch.label) ? "mindmap-node-highlighted" : ""
-                      } ${hasMatchInBranch && !matchesSearch(branch.label) ? "mindmap-node-parent-match" : ""}`}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "8px"
-                      }}
-                    >
-                      <span style={{ flexGrow: 1, textAlign: "center" }}>{branch.label}</span>
-                      {branch.children && branch.children.length > 0 && (
-                        <span style={{ opacity: 0.6, display: "flex", alignItems: "center" }}>
-                          {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  return (
+                    <div key={branch.id} className="mindmap-branch-column">
+                      {/* Branch Node Card */}
+                      <div 
+                        onClick={() => toggleBranch(branch.id)}
+                        className={`mindmap-branch-node ${isCollapsed ? "collapsed" : ""} ${
+                          matchesSearch(branch.label) ? "mindmap-node-highlighted" : ""
+                        } ${hasMatchInBranch && !matchesSearch(branch.label) ? "mindmap-node-parent-match" : ""}`}
+                      >
+                        <span>{branch.label}</span>
+                        <span style={{ marginLeft: "6px", display: "inline-flex", alignItems: "center" }}>
+                          {isCollapsed ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
                         </span>
-                      )}
-                    </div>
+                      </div>
 
-                    {/* Stem down from branch to leaves list (only if expanded) */}
-                    {branch.children && branch.children.length > 0 && !isCollapsed && (
-                      <div className="mindmap-leaf-stem" />
-                    )}
-
-                    {/* Level 2: Leaves (Child nodes) */}
-                    <AnimatePresence>
-                      {branch.children && branch.children.length > 0 && !isCollapsed && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="mindmap-leaves-list"
-                        >
-                          {branch.children.map((leaf) => (
+                      {/* Leaf stem and list */}
+                      <AnimatePresence>
+                        {!isCollapsed && branch.children && branch.children.length > 0 && (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                            <div className="mindmap-leaf-stem" />
                             <motion.div 
-                              key={leaf.id} 
-                              className={`mindmap-leaf-node ${matchesSearch(leaf.label) ? "mindmap-node-highlighted" : ""}`}
-                              whileHover={{ x: 4 }}
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="mindmap-leaves-list"
                             >
-                              {leaf.label}
+                              {branch.children.map((leaf) => (
+                                <motion.div 
+                                  key={leaf.id} 
+                                  className={`mindmap-leaf-node ${matchesSearch(leaf.label) ? "mindmap-node-highlighted" : ""}`}
+                                  whileHover={{ x: 4 }}
+                                >
+                                  {leaf.label}
+                                </motion.div>
+                              ))}
                             </motion.div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+                          </div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   )
