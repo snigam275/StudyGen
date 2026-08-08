@@ -8,25 +8,25 @@
 
 /* Bioluminescent Deep Sea Dark Theme - Premium Oceanic Blue View */
 [data-theme="dark"] {
-  --bg-base: #0b0f19;        /* Deep slate black-blue base background */
-  --bg-sidebar: #0e1322;     /* Sleek sidebar slate background */
-  --bg-card: #192035;        /* High-contrast slate card background */
-  --bg-input: #0f1424;       /* Slate input background */
-  --text-color: #f8fafc;     /* Near-white body text for maximum readability */
-  --text-muted: #94a3b8;     /* Slate-grey muted text */
-  --primary: #3b82f6;        /* Glowing azure blue primary theme color */
-  --primary-hover: #60a5fa;  /* Light blue primary hover */
-  --primary-glow: rgba(59, 130, 246, 0.3);
-  --accent: #00d8ff;         /* Glowing cyan/light blue accent */
+  --bg-base: #0a1128;        /* Deep ocean sea-black base background */
+  --bg-sidebar: #001f54;     /* Deep navy blue sidebar background */
+  --bg-card: #002d62;        /* Rich sea-blue card background */
+  --bg-input: #0a1128;       /* Deep ocean input background */
+  --text-color: #ffffff;     /* Crisp white text */
+  --text-muted: #93c5fd;     /* Glowing azure/sky-blue muted text */
+  --primary: #00b4d8;        /* Bioluminescent cyan/sea-blue primary color */
+  --primary-hover: #90e0ef;  /* Light sea cyan hover */
+  --primary-glow: rgba(0, 180, 216, 0.35);
+  --accent: #00f5d4;         /* Electric sea-teal accent */
   --success-bg: rgba(16, 185, 129, 0.1);
   --success-border: rgba(16, 185, 129, 0.25);
   --success-text: #10b981;
   --error-bg: rgba(244, 63, 94, 0.1);
   --error-border: rgba(244, 63, 94, 0.25);
   --error-text: #f43f5e;
-  --border-color: rgba(59, 130, 246, 0.15); /* Sleek blue-tinted border */
-  --shadow-color: rgba(0, 0, 0, 0.45);
-  --btn-inactive: rgba(59, 130, 246, 0.08);
+  --border-color: rgba(0, 180, 216, 0.25); /* Ocean blue border lines */
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --btn-inactive: rgba(0, 180, 216, 0.08);
 }
 
 /* Creamish-Yellow and Light Brown Light Theme */
