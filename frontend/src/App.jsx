@@ -931,7 +931,11 @@ function App() {
                     margin: "0 auto 16px auto"
                   }} />
                   <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 8px 0" }}>
-                    Generating {loadingMode === "summary" ? "Summary" : loadingMode === "flashcards" ? "Flashcards" : "Quiz"}
+                    Generating {
+                      loadingMode === "summary" ? "Summary" :
+                      loadingMode === "flashcards" ? "Flashcards" :
+                      loadingMode === "mindmap" ? "Mind Map" : "Quiz"
+                    }
                   </h3>
                   <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>
                     Please wait while Gemini analyzes "{activeFile ? activeFile.name : 'PDF'}" and compiles your materials.
