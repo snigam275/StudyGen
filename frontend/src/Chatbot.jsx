@@ -296,17 +296,17 @@ export default function Chatbot({ file, theme, isInline = false, chatWidth = 360
                 onClick={onCollapse}
                 title="Collapse Chat Panel"
                 style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--text-color)",
+                  background: "var(--btn-inactive)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "8px",
+                  color: "var(--primary)",
                   cursor: "pointer",
+                  width: "32px",
+                  height: "32px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  padding: "4px",
-                  marginLeft: "4px",
-                  opacity: 0.7,
-                  transition: "opacity 0.2s"
+                  transition: "all 0.2s"
                 }}
               >
                 <X size={16} />

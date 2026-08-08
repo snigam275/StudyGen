@@ -713,19 +713,20 @@ function App() {
               onClick={() => setLeftSidebarCollapsed(true)}
               title="Collapse Sidebar"
               style={{
-                background: "transparent",
-                border: "none",
-                color: "var(--text-color)",
+                background: "var(--btn-inactive)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "8px",
+                color: "var(--primary)",
                 cursor: "pointer",
-                padding: "6px",
+                width: "32px",
+                height: "32px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: 0.7,
-                transition: "opacity 0.2s"
+                transition: "all 0.2s"
               }}
             >
-              <Menu size={18} />
+              <Menu size={16} />
             </button>
           </div>
 
@@ -815,24 +816,50 @@ function App() {
           overflow: "hidden"
         }}>
           {/* TOP BAR Search and Navigation Title */}
-          <div style={{
-            height: "72px",
-            minHeight: "72px",
-            padding: isMobile ? "0 12px" : "0 40px",
-            borderBottom: "1px solid var(--border-color)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            background: "transparent"
-          }}>
-            {/* Sidebar toggle and Chat Panel Toggle aligned to opposite corners */}
-            <div style={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-              {leftSidebarCollapsed && (
+          {(leftSidebarCollapsed || chatSidebarCollapsed) && (
+            <div style={{
+              height: "72px",
+              minHeight: "72px",
+              padding: isMobile ? "0 12px" : "0 40px",
+              borderBottom: "1px solid var(--border-color)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: "transparent"
+            }}>
+              {/* Sidebar toggle and Chat Panel Toggle aligned to opposite corners */}
+              <div style={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+                {leftSidebarCollapsed && (
+                  <button
+                    onClick={() => setLeftSidebarCollapsed(false)}
+                    title="Expand Sidebar"
+                    style={{
+                      background: "var(--btn-inactive)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "10px",
+                      width: "40px",
+                      height: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--primary)",
+                      cursor: "pointer",
+                      marginRight: isMobile ? "8px" : "16px",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    <Menu size={18} />
+                  </button>
+                )}
+              </div>
+
+              {/* Chat Panel Toggle */}
+              {chatSidebarCollapsed && (
                 <button
-                  onClick={() => setLeftSidebarCollapsed(false)}
-                  title="Expand Sidebar"
+                  onClick={() => setChatSidebarCollapsed(false)}
+                  title="Expand Chat Panel"
                   style={{
-                    background: "var(--bg-input)",
+                    background: "var(--btn-inactive)",
                     border: "1px solid var(--border-color)",
                     borderRadius: "10px",
                     width: "40px",
@@ -840,41 +867,17 @@ function App() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--text-color)",
+                    color: "var(--primary)",
                     cursor: "pointer",
-                    marginRight: isMobile ? "8px" : "16px",
+                    marginLeft: "auto",
                     transition: "all 0.2s"
                   }}
                 >
-                  <Menu size={18} />
+                  <MessageSquare size={18} />
                 </button>
               )}
             </div>
-
-            {/* Chat Panel Toggle */}
-            {chatSidebarCollapsed && (
-              <button
-                onClick={() => setChatSidebarCollapsed(false)}
-                title="Expand Chat Panel"
-                style={{
-                  background: "var(--bg-input)",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "10px",
-                  width: "40px",
-                  height: "40px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--text-color)",
-                  cursor: "pointer",
-                  marginLeft: "auto",
-                  transition: "all 0.2s"
-                }}
-              >
-                <MessageSquare size={18} />
-              </button>
-            )}
-          </div>
+          )}
 
           {/* MAIN SCROLLABLE PANEL */}
           <div style={{
