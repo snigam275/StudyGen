@@ -217,15 +217,18 @@ function FlashcardsView({ data, file }) {
           <div style={{ display: "flex", width: "100%", justifyContent: "center", position: "relative" }}>
             
             {/* SVG Tree Connector Lines Overlay */}
-            <svg style={{
-              position: "absolute",
-              top: "-32px",
-              left: "5%",
-              width: "90%",
-              height: "50px",
-              pointerEvents: "none",
-              zIndex: 1
-            }}>
+            <svg 
+              className="concept-tree-svg"
+              style={{
+                position: "absolute",
+                top: "-32px",
+                left: "5%",
+                width: "90%",
+                height: "50px",
+                pointerEvents: "none",
+                zIndex: 1
+              }}
+            >
               {/* Left Branch Curve */}
               <path 
                 d="M 50% 0 C 50% 25, 25% 25, 25% 50" 
@@ -244,7 +247,7 @@ function FlashcardsView({ data, file }) {
             </svg>
 
             {/* Tree Branch Structure Columns */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "40px", width: "100%" }}>
+            <div className="concept-branch-grid">
               
               {/* LEFT BRANCH (Trunk A) */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>

@@ -103,8 +103,20 @@ function App() {
 
   // Resizable chatbot panel width state
   const [chatWidth, setChatWidth] = useState(360)
-  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
-  const [chatSidebarCollapsed, setChatSidebarCollapsed] = useState(false)
+  
+  // Mobile responsive layout states
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(window.innerWidth < 768)
+  const [chatSidebarCollapsed, setChatSidebarCollapsed] = useState(window.innerWidth < 768)
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+    }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   // Drag resizing handler for right chatbot panel
   const startResizeChat = (mouseDownEvent) => {
@@ -459,15 +471,15 @@ function App() {
     if (isActive) {
       if (id === "summary") {
         activeBg = theme === "dark" 
-          ? "linear-gradient(135deg, #00a4e4 0%, #33ffd0 100%)" 
+          ? "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)" 
           : "linear-gradient(135deg, #8b5a2b 0%, #cd853f 100%)"
       } else if (id === "flashcards") {
         activeBg = theme === "dark" 
-          ? "linear-gradient(135deg, #00a4e4 0%, #008cc4 100%)" 
+          ? "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)" 
           : "linear-gradient(135deg, #cd853f 0%, #8b5a2b 100%)"
       } else if (id === "quiz") {
         activeBg = theme === "dark" 
-          ? "linear-gradient(135deg, #33ffd0 0%, #00a4e4 100%)" 
+          ? "linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%)" 
           : "linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%)"
       }
     }
@@ -541,10 +553,10 @@ function App() {
       {/* Background WebGL Orb */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0, opacity: theme === "dark" ? 0.32 : 0.2, pointerEvents: "none" }}>
         <Orb 
-          hue={theme === "dark" ? 200 : 45} 
+          hue={theme === "dark" ? 230 : 45} 
           hoverIntensity={0.6} 
           rotateOnHover 
-          backgroundColor={theme === "dark" ? "#030811" : "#f9f6e9"} 
+          backgroundColor={theme === "dark" ? "#141619" : "#f9f6e9"} 
         />
       </div>
 
@@ -552,15 +564,15 @@ function App() {
       {theme === "dark" && (
         <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
           {/* Bubble 1 */}
-          <div className="sea-bubble" style={{ width: "100px", height: "100px", left: "38%", background: "radial-gradient(circle, rgba(0, 164, 228, 0.75) 0%, rgba(0, 164, 228, 0) 70%)", animationDelay: "0s", animationDuration: "16s" }} />
+          <div className="sea-bubble" style={{ width: "100px", height: "100px", left: "38%", background: "radial-gradient(circle, rgba(10, 33, 192, 0.75) 0%, rgba(10, 33, 192, 0) 70%)", animationDelay: "0s", animationDuration: "16s" }} />
           {/* Bubble 2 */}
-          <div className="sea-bubble" style={{ width: "70px", height: "70px", left: "44%", background: "radial-gradient(circle, rgba(51, 255, 208, 0.8) 0%, rgba(51, 255, 208, 0) 70%)", animationDelay: "-3s", animationDuration: "12s" }} />
+          <div className="sea-bubble" style={{ width: "70px", height: "70px", left: "44%", background: "radial-gradient(circle, rgba(0, 216, 255, 0.8) 0%, rgba(0, 216, 255, 0) 70%)", animationDelay: "-3s", animationDuration: "12s" }} />
           {/* Bubble 3 */}
-          <div className="sea-bubble" style={{ width: "130px", height: "130px", left: "48%", background: "radial-gradient(circle, rgba(0, 164, 228, 0.7) 0%, rgba(0, 164, 228, 0) 70%)", animationDelay: "-7s", animationDuration: "20s" }} />
+          <div className="sea-bubble" style={{ width: "130px", height: "130px", left: "48%", background: "radial-gradient(circle, rgba(10, 33, 192, 0.7) 0%, rgba(10, 33, 192, 0) 70%)", animationDelay: "-7s", animationDuration: "20s" }} />
           {/* Bubble 4 */}
-          <div className="sea-bubble" style={{ width: "60px", height: "60px", left: "54%", background: "radial-gradient(circle, rgba(51, 255, 208, 0.85) 0%, rgba(51, 255, 208, 0) 70%)", animationDelay: "-2s", animationDuration: "10s" }} />
+          <div className="sea-bubble" style={{ width: "60px", height: "60px", left: "54%", background: "radial-gradient(circle, rgba(0, 216, 255, 0.85) 0%, rgba(0, 216, 255, 0) 70%)", animationDelay: "-2s", animationDuration: "10s" }} />
           {/* Bubble 5 */}
-          <div className="sea-bubble" style={{ width: "90px", height: "90px", left: "58%", background: "radial-gradient(circle, rgba(0, 164, 228, 0.75) 0%, rgba(0, 164, 228, 0) 70%)", animationDelay: "-11s", animationDuration: "15s" }} />
+          <div className="sea-bubble" style={{ width: "90px", height: "90px", left: "58%", background: "radial-gradient(circle, rgba(10, 33, 192, 0.75) 0%, rgba(10, 33, 192, 0) 70%)", animationDelay: "-11s", animationDuration: "15s" }} />
         </div>
       )}
 
@@ -599,11 +611,30 @@ function App() {
       {/* THREE COLUMN GRID - Reference Layout */}
       <div style={{ display: "flex", width: "100%", height: "100%", zIndex: 2, position: "relative" }}>
 
+        {/* Backdrop overlay for mobile left sidebar */}
+        {isMobile && !leftSidebarCollapsed && (
+          <div 
+            onClick={() => setLeftSidebarCollapsed(true)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.5)",
+              backdropFilter: "blur(4px)",
+              zIndex: 90,
+              transition: "opacity var(--transition-speed) ease"
+            }}
+          />
+        )}
+
         {/* COLUMN 1: LEFT SIDEBAR (Width: 280px) */}
         <div style={{
+          position: isMobile ? "absolute" : "relative",
+          left: 0,
+          top: 0,
+          zIndex: isMobile ? 100 : 10,
           width: leftSidebarCollapsed ? "0px" : "280px",
           minWidth: leftSidebarCollapsed ? "0px" : "280px",
-          background: theme === "dark" ? "rgba(6, 14, 26, 0.8)" : "rgba(242, 235, 213, 0.85)",
+          background: theme === "dark" ? "rgba(5, 10, 68, 0.88)" : "rgba(242, 235, 213, 0.9)",
           borderRight: leftSidebarCollapsed ? "none" : "1px solid var(--border-color)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
@@ -614,6 +645,7 @@ function App() {
           height: "100vh",
           overflow: leftSidebarCollapsed ? "hidden" : "auto",
           opacity: leftSidebarCollapsed ? 0 : 1,
+          boxShadow: isMobile && !leftSidebarCollapsed ? "4px 0 24px rgba(0,0,0,0.5)" : "none",
           transition: "all var(--transition-speed)"
         }}>
           {/* Highlighted Bold Logo Card */}
@@ -738,7 +770,7 @@ function App() {
           <div style={{
             height: "72px",
             minHeight: "72px",
-            padding: "0 40px",
+            padding: isMobile ? "0 12px" : "0 40px",
             borderBottom: "1px solid var(--border-color)",
             display: "flex",
             alignItems: "center",
@@ -746,7 +778,7 @@ function App() {
             background: "transparent"
           }}>
             {/* Sidebar toggle and Search Bar */}
-            <div style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", flexGrow: 1, marginRight: isMobile ? "8px" : "16px" }}>
               <button
                 onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
                 title={leftSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
@@ -761,7 +793,7 @@ function App() {
                   justifyContent: "center",
                   color: "var(--text-color)",
                   cursor: "pointer",
-                  marginRight: "16px",
+                  marginRight: isMobile ? "8px" : "16px",
                   transition: "all 0.2s"
                 }}
               >
@@ -776,12 +808,13 @@ function App() {
                 border: "1px solid var(--border-color)",
                 borderRadius: "12px",
                 padding: "8px 16px",
-                width: "360px"
+                flexGrow: 1,
+                maxWidth: isMobile ? "220px" : "360px"
               }}>
                 <Search size={15} style={{ color: "var(--text-muted)" }} />
                 <input 
                   type="text" 
-                  placeholder="Search notes, files, tools..." 
+                  placeholder={isMobile ? "Search..." : "Search notes, files, tools..."}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   style={{
@@ -830,7 +863,7 @@ function App() {
           <div style={{
             flexGrow: 1,
             overflowY: "auto",
-            padding: "36px 40px",
+            padding: isMobile ? "20px 16px" : "36px 40px",
             position: "relative"
           }}>
             
@@ -902,11 +935,11 @@ function App() {
                   </div>
 
                   {/* 4 STATS CARDS GRID */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: "16px" }}>
                     
                     {/* Stat Card 1: PDFs */}
                     <div style={{
-                      background: theme === "dark" ? "rgba(0, 164, 228, 0.1)" : "rgba(139, 90, 43, 0.08)",
+                      background: theme === "dark" ? "rgba(10, 33, 192, 0.12)" : "rgba(139, 90, 43, 0.08)",
                       border: "1px solid var(--border-color)",
                       borderRadius: "16px",
                       padding: "20px",
@@ -925,7 +958,7 @@ function App() {
 
                     {/* Stat Card 2: Pages */}
                     <div style={{
-                      background: theme === "dark" ? "rgba(51, 255, 208, 0.1)" : "rgba(205, 133, 63, 0.08)",
+                      background: theme === "dark" ? "rgba(0, 216, 255, 0.1)" : "rgba(205, 133, 63, 0.08)",
                       border: "1px solid var(--border-color)",
                       borderRadius: "16px",
                       padding: "20px",
@@ -944,7 +977,7 @@ function App() {
 
                     {/* Stat Card 3: Flashcards */}
                     <div style={{
-                      background: theme === "dark" ? "rgba(0, 164, 228, 0.1)" : "rgba(139, 90, 43, 0.08)",
+                      background: theme === "dark" ? "rgba(10, 33, 192, 0.12)" : "rgba(139, 90, 43, 0.08)",
                       border: "1px solid var(--border-color)",
                       borderRadius: "16px",
                       padding: "20px",
@@ -963,7 +996,7 @@ function App() {
 
                     {/* Stat Card 4: Quiz Score */}
                     <div style={{
-                      background: theme === "dark" ? "rgba(51, 255, 208, 0.1)" : "rgba(101, 163, 13, 0.08)",
+                      background: theme === "dark" ? "rgba(16, 185, 129, 0.1)" : "rgba(101, 163, 13, 0.08)",
                       border: "1px solid var(--border-color)",
                       borderRadius: "16px",
                       padding: "20px",
@@ -1090,7 +1123,7 @@ function App() {
                       Transform your study material into powerful learning resources
                     </p>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: "12px" }}>
                       
                       {/* Tool 1: Summary */}
                       <div 
@@ -2283,12 +2316,30 @@ function App() {
           </div>
         </div>
 
+        {/* Backdrop overlay for mobile right chatbot */}
+        {isMobile && !chatSidebarCollapsed && (
+          <div 
+            onClick={() => setChatSidebarCollapsed(true)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.5)",
+              backdropFilter: "blur(4px)",
+              zIndex: 90,
+              transition: "opacity var(--transition-speed) ease"
+            }}
+          />
+        )}
+
         {/* COLUMN 3: RIGHT PERSISTENT AI CHATBOT (Always pinned on the right) */}
         <div style={{
-          width: chatSidebarCollapsed ? "0px" : `${chatWidth}px`,
-          minWidth: chatSidebarCollapsed ? "0px" : `${chatWidth}px`,
-          position: "relative",
-          background: theme === "dark" ? "rgba(6, 14, 26, 0.8)" : "rgba(242, 235, 213, 0.85)",
+          position: isMobile ? "absolute" : "relative",
+          right: 0,
+          top: 0,
+          zIndex: isMobile ? 100 : 10,
+          width: isMobile ? (chatSidebarCollapsed ? "0px" : "100vw") : (chatSidebarCollapsed ? "0px" : `${chatWidth}px`),
+          minWidth: isMobile ? (chatSidebarCollapsed ? "0px" : "100vw") : (chatSidebarCollapsed ? "0px" : `${chatWidth}px`),
+          background: theme === "dark" ? "rgba(44, 46, 58, 0.93)" : "rgba(242, 235, 213, 0.9)",
           borderLeft: chatSidebarCollapsed ? "none" : "1px solid var(--border-color)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
@@ -2296,13 +2347,13 @@ function App() {
           height: "100vh",
           display: "flex",
           flexDirection: "column",
-          zIndex: 2,
           overflow: chatSidebarCollapsed ? "hidden" : "visible",
           opacity: chatSidebarCollapsed ? 0 : 1,
+          boxShadow: isMobile && !chatSidebarCollapsed ? "-4px 0 24px rgba(0,0,0,0.5)" : "none",
           transition: "all var(--transition-speed)"
         }}>
           {/* Resize Handler (Puller) */}
-          {!chatSidebarCollapsed && (
+          {!chatSidebarCollapsed && !isMobile && (
             <div
               onMouseDown={startResizeChat}
               style={{
