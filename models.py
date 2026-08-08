@@ -21,6 +21,7 @@ class Summary(BaseModel):
 class MindMapNodeFlat(BaseModel):
     id: str = Field(description="A unique short identifier for the node (e.g. 'root', 'branch-1', 'leaf-1-1')")
     label: str = Field(description="A brief label (1-4 words) describing the concept")
+    description: str = Field(description="A brief 1-2 sentence explanation of this concept/details")
     parent_id: Optional[str] = Field(None, description="The ID of the parent node, or null/None if it is the root node")
 
 

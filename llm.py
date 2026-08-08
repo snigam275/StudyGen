@@ -236,7 +236,8 @@ def make_mindmap(text: str) -> MindMap:
         "1. Create one central root node with no parent_id (parent_id = null or None).\n"
         "2. Create multiple branch nodes whose parent_id points to the root node.\n"
         "3. Create leaf nodes under those branch nodes to represent details, whose parent_id points to their branch.\n"
-        "Keep labels concise (1-4 words max) and ids short and unique (e.g. 'root', 'branch-1', 'leaf-1-1').\n\n"
+        "For every node, provide a concise label (1-4 words max) and a clear 1-2 sentence description explaining the concept.\n"
+        "Keep ids short and unique (e.g. 'root', 'branch-1', 'leaf-1-1').\n\n"
         "Study Notes:\n"
         + text
     )
