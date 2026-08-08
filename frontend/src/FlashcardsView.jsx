@@ -17,12 +17,20 @@ function Flashcard({ front, back }) {
       onClick={() => setFlipped(!flipped)}
     >
       <motion.div 
-        className={`flip-card-inner ${flipped ? 'flipped' : ''}`}
-        whileHover={{ scale: 1.03, boxShadow: "0 10px 25px var(--shadow-color)" }}
+        className="flip-card-inner"
+        style={{
+          transformStyle: "preserve-3d",
+          width: "100%",
+          height: "100%",
+          position: "relative"
+        }}
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        transition={{ duration: 0.4 }}
+        whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.98 }}
       >
         {/* Front Face */}
-        <div className="flip-card-front" style={{ padding: "16px" }}>
+        <div className="flip-card-front" style={{ padding: "16px", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(0deg)", position: "absolute", width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           <div style={{ 
             fontSize: "10px", 
             fontWeight: 700, 
@@ -56,7 +64,7 @@ function Flashcard({ front, back }) {
         </div>
 
         {/* Back Face */}
-        <div className="flip-card-back" style={{ padding: "16px" }}>
+        <div className="flip-card-back" style={{ padding: "16px", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", position: "absolute", width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           <div style={{ 
             fontSize: "10px", 
             fontWeight: 700, 

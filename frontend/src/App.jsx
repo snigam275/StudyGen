@@ -1189,7 +1189,7 @@ function App() {
                           width: "36px",
                           height: "36px",
                           borderRadius: "8px",
-                          background: "rgba(0, 164, 228, 0.12)",
+                          background: "var(--btn-inactive)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -1209,8 +1209,8 @@ function App() {
                             if (!summaryResult) generate("summary")
                           }}
                           style={{
-                            background: "rgba(0, 164, 228, 0.15)",
-                            color: theme === "light" ? "#7f4f24" : "#ffffff",
+                            background: "var(--btn-inactive)",
+                            color: "var(--primary)",
                             border: "none",
                             borderRadius: "8px",
                             padding: "8px 12px",
@@ -1252,7 +1252,7 @@ function App() {
                           width: "36px",
                           height: "36px",
                           borderRadius: "8px",
-                          background: "rgba(51, 255, 208, 0.12)",
+                          background: "var(--btn-inactive)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -1272,8 +1272,8 @@ function App() {
                             setFlashcardViewMode("grid")
                           }}
                           style={{
-                            background: "rgba(51, 255, 208, 0.15)",
-                            color: theme === "light" ? "#7f4f24" : "#ffffff",
+                            background: "var(--btn-inactive)",
+                            color: "var(--primary)",
                             border: "none",
                             borderRadius: "8px",
                             padding: "8px 12px",
@@ -1314,7 +1314,7 @@ function App() {
                           width: "36px",
                           height: "36px",
                           borderRadius: "8px",
-                          background: "rgba(0, 164, 228, 0.12)",
+                          background: "var(--btn-inactive)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -1333,8 +1333,8 @@ function App() {
                             setActiveTab("quiz")
                           }}
                           style={{
-                            background: "rgba(0, 164, 228, 0.15)",
-                            color: theme === "light" ? "#7f4f24" : "#ffffff",
+                            background: "var(--btn-inactive)",
+                            color: "var(--primary)",
                             border: "none",
                             borderRadius: "8px",
                             padding: "8px 12px",
@@ -1376,7 +1376,7 @@ function App() {
                           width: "36px",
                           height: "36px",
                           borderRadius: "8px",
-                          background: "rgba(51, 255, 208, 0.12)",
+                          background: "var(--btn-inactive)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -1397,8 +1397,8 @@ function App() {
                             if (!mindmapResult) generate("mindmap")
                           }}
                           style={{
-                            background: "rgba(51, 255, 208, 0.15)",
-                            color: theme === "light" ? "#7f4f24" : "#ffffff",
+                            background: "var(--btn-inactive)",
+                            color: "var(--primary)",
                             border: "none",
                             borderRadius: "8px",
                             padding: "8px 12px",
@@ -2572,7 +2572,7 @@ function App() {
             </div>
           )}
 
-          <Chatbot file={activeFile} isInline={true} chatWidth={chatWidth} setChatWidth={setChatWidth} />
+          <Chatbot file={activeFile} theme={theme} isInline={true} chatWidth={chatWidth} setChatWidth={setChatWidth} />
         </div>
 
       </div>

@@ -6,7 +6,7 @@ export default function MindmapView({ data, file }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [collapsedBranches, setCollapsedBranches] = useState({})
 
-  if (!data || !data.root) {
+  if (!data) {
     return (
       <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
         No mind map data available. Generate a mind map to visualize concept mappings.
@@ -14,7 +14,43 @@ export default function MindmapView({ data, file }) {
     )
   }
 
-  const { topic, root } = data
+  const { topic } = data
+
+  const buildTree = (flatNodes) => {
+    if (!flatNodes || flatNodes.length === 0) return null
+    const nodeMap = {}
+    let rootNode = null
+
+    flatNodes.forEach(node => {
+      nodeMap[node.id] = { ...node, children: [] }
+    })
+
+    flatNodes.forEach(node => {
+      const mappedNode = nodeMap[node.id]
+      if (!node.parent_id) {
+        rootNode = mappedNode
+      } else {
+        const parent = nodeMap[node.parent_id]
+        if (parent) {
+          parent.children.push(mappedNode)
+        } else {
+          if (!rootNode) rootNode = mappedNode
+        }
+      }
+    })
+
+    return rootNode || nodeMap[flatNodes[0].id]
+  }
+
+  const root = data.root || buildTree(data.nodes || [])
+
+  if (!root) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+        No valid mind map hierarchy resolved. Please try re-generating.
+      </div>
+    )
+  }
 
   const toggleBranch = (id) => {
     setCollapsedBranches(prev => ({

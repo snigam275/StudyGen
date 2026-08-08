@@ -229,11 +229,15 @@ def make_chat_response(text: str, question: str) -> str:
 
 
 def make_mindmap(text: str) -> MindMap:
-    """Generates a hierarchical mind map structure from the notes text."""
+    """Generates a flat mind map structure from the notes text."""
     prompt = (
-        "Analyze the following study notes and generate a hierarchical mind map structure "
-        "representing the key concepts. It must have a central root topic and branches with "
-        "clear child nodes showing relationships. Keep labels concise (1-4 words max).\n\n"
+        "Analyze the following study notes and generate a mind map representation "
+        "consisting of a flat list of concept nodes. Link them using parent_id references:\n"
+        "1. Create one central root node with no parent_id (parent_id = null or None).\n"
+        "2. Create multiple branch nodes whose parent_id points to the root node.\n"
+        "3. Create leaf nodes under those branch nodes to represent details, whose parent_id points to their branch.\n"
+        "Keep labels concise (1-4 words max) and ids short and unique (e.g. 'root', 'branch-1', 'leaf-1-1').\n\n"
+        "Study Notes:\n"
         + text
     )
     return _generate(prompt, MindMap)

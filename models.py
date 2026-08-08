@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 class Flashcard(BaseModel):
     front: str = Field(description="The question or term on the front of the card")
@@ -17,16 +18,12 @@ class Summary(BaseModel):
     key_points: list[str] = Field(description="The main takeaways, one item each")
 
 
-class MindMapNode(BaseModel):
-    id: str = Field(description="A unique short identifier for the node (e.g. 'root', 'node-1', etc.)")
+class MindMapNodeFlat(BaseModel):
+    id: str = Field(description="A unique short identifier for the node (e.g. 'root', 'branch-1', 'leaf-1-1')")
     label: str = Field(description="A brief label (1-4 words) describing the concept")
-    children: list['MindMapNode'] = Field(default=[], description="Sub-concepts or details branches under this concept")
-
-
-# Resolve forward references for recursive definition in Pydantic v2
-MindMapNode.model_rebuild()
+    parent_id: Optional[str] = Field(None, description="The ID of the parent node, or null/None if it is the root node")
 
 
 class MindMap(BaseModel):
     topic: str = Field(description="The central main subject of the study material")
-    root: MindMapNode = Field(description="The root node of the hierarchical mind map tree")
+    nodes: list[MindMapNodeFlat] = Field(description="A flat list of all concept nodes in the mind map, linked by parent_id")
