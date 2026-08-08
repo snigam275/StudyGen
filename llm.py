@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from google import genai
 import requests
 
-from models import Summary, Flashcard, MCQ
+from models import Summary, Flashcard, MCQ, MindMap
 from pdf_utils import extract_text
 
 load_dotenv()
@@ -153,6 +153,15 @@ def make_quiz(text: str, num_questions: int = 5, difficulty: str = "medium", exc
     return _generate(prompt, list[MCQ])
 
 
+GUARDRAILS_PROMPT = (
+    "You are a helpful, strict study assistant for the provided document. "
+    "Your responses MUST adhere to these guardrails:\n"
+    "1. Always keep the answer relevant to the PDF/study notes topic.\n"
+    "2. Check if the user's question is about a topic or contains keywords/concepts that are present in the provided study notes.\n"
+    "3. If the keyword, topic, or concept is present in the notes, and the user wants to expand or know more about it, you should answer relevantly using your general knowledge, keeping it strictly relevant to that context.\n"
+    "4. If the user asks about something completely unrelated, off-topic, or not present anywhere in the notes (no matching keywords or related concepts), you MUST decline to answer with a respectful denial (e.g. \"I'm sorry, but this topic is not discussed in the provided document. Please ask questions related to the study material.\"). Do not answer off-topic questions."
+)
+
 def _make_chat_response_groq(text: str, question: str) -> str:
     """Fallback helper to run chat Q&A using Groq's API."""
     api_key = os.getenv("GROQ_API_KEY")
@@ -166,10 +175,10 @@ def _make_chat_response_groq(text: str, question: str) -> str:
     }
     
     prompt = (
-        f"You are a helpful study assistant. Answer the following question based on the provided study notes.\n\n"
+        f"{GUARDRAILS_PROMPT}\n\n"
         f"Question: {question}\n\n"
         f"Study Notes:\n{text}\n\n"
-        f"Provide a clear, accurate, and concise answer to the student's question. If the answer cannot be found in the notes, use your general knowledge but mention it is not explicitly in the notes."
+        f"Provide a clear, accurate, and concise answer to the student's question."
     )
     
     payload = {
@@ -195,10 +204,10 @@ def make_chat_response(text: str, question: str) -> str:
     # Try Gemini
     try:
         prompt = (
-            f"You are a helpful study assistant. Answer the following question based on the provided study notes.\n\n"
+            f"{GUARDRAILS_PROMPT}\n\n"
             f"Question: {question}\n\n"
             f"Study Notes:\n{text}\n\n"
-            f"Provide a clear, accurate, and concise answer to the student's question. If the answer cannot be found in the notes, use your general knowledge but mention it is not explicitly in the notes."
+            f"Provide a clear, accurate, and concise answer to the student's question."
         )
         response = client.models.generate_content(
             model=MODEL,
@@ -217,6 +226,17 @@ def make_chat_response(text: str, question: str) -> str:
             print(f"Groq chat fallback failed too. (Error: {groq_e})")
             
     raise RuntimeError(f"Both Gemini and Groq APIs failed to respond. Details: {'; '.join(errors)}")
+
+
+def make_mindmap(text: str) -> MindMap:
+    """Generates a hierarchical mind map structure from the notes text."""
+    prompt = (
+        "Analyze the following study notes and generate a hierarchical mind map structure "
+        "representing the key concepts. It must have a central root topic and branches with "
+        "clear child nodes showing relationships. Keep labels concise (1-4 words max).\n\n"
+        + text
+    )
+    return _generate(prompt, MindMap)
 
 
 # Quick test - run:  python llm.py "All about LLM.pdf"

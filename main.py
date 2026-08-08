@@ -2,6 +2,7 @@ from io import BytesIO
 from typing import Optional
 import json
 import os
+import hashlib
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,8 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pypdf import PdfReader
 
-from models import Summary, Flashcard, MCQ
-from llm import make_summary, make_flashcards, make_quiz, make_chat_response
+from models import Summary, Flashcard, MCQ, MindMap
+from llm import make_summary, make_flashcards, make_quiz, make_chat_response, make_mindmap
+from database import init_db, get_cached_item, set_cached_item
 
 app = FastAPI(title="StudyGen API")
 
@@ -22,6 +24,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 def read_pdf(data: bytes) -> str:
     """Turn an uploaded PDF's bytes into plain text."""
@@ -52,8 +57,20 @@ async def root():
 @app.post("/summary")
 async def summary_endpoint(file: UploadFile = File(...)) -> Summary:
     try:
-        text = read_pdf(await file.read())
-        return make_summary(text)
+        file_bytes = await file.read()
+        pdf_hash = hashlib.sha256(file_bytes).hexdigest()
+        
+        # Check cache
+        cached = get_cached_item(pdf_hash, "summary")
+        if cached:
+            return Summary(**cached)
+            
+        text = read_pdf(file_bytes)
+        result = make_summary(text)
+        
+        # Save cache
+        set_cached_item(pdf_hash, file.filename, "summary", result.model_dump())
+        return result
     except Exception as e:
         err_msg = str(e)
         if "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
@@ -64,8 +81,20 @@ async def summary_endpoint(file: UploadFile = File(...)) -> Summary:
 @app.post("/flashcards")
 async def flashcards_endpoint(file: UploadFile = File(...), num_cards: int = 10) -> list[Flashcard]:
     try:
-        text = read_pdf(await file.read())
-        return make_flashcards(text, num_cards=num_cards)
+        file_bytes = await file.read()
+        pdf_hash = hashlib.sha256(file_bytes).hexdigest()
+        
+        # Check cache
+        cached = get_cached_item(pdf_hash, "flashcards")
+        if cached:
+            return [Flashcard(**fc) for fc in cached]
+            
+        text = read_pdf(file_bytes)
+        result = make_flashcards(text, num_cards=num_cards)
+        
+        # Save cache
+        set_cached_item(pdf_hash, file.filename, "flashcards", [fc.model_dump() for fc in result])
+        return result
     except Exception as e:
         err_msg = str(e)
         if "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
@@ -81,14 +110,50 @@ async def quiz_endpoint(
     exclude_questions: Optional[str] = Form(None)
 ) -> list[MCQ]:
     try:
-        text = read_pdf(await file.read())
+        file_bytes = await file.read()
+        pdf_hash = hashlib.sha256(file_bytes).hexdigest()
+        
+        # Check cache
+        cached = get_cached_item(pdf_hash, "quiz")
+        if cached:
+            return [MCQ(**q) for q in cached]
+            
+        text = read_pdf(file_bytes)
         exclude_list = []
         if exclude_questions:
             try:
                 exclude_list = json.loads(exclude_questions)
             except Exception:
                 exclude_list = [q.strip() for q in exclude_questions.split(",") if q.strip()]
-        return make_quiz(text, num_questions=num_questions, difficulty=difficulty, exclude_questions=exclude_list)
+        result = make_quiz(text, num_questions=num_questions, difficulty=difficulty, exclude_questions=exclude_list)
+        
+        # Save cache
+        set_cached_item(pdf_hash, file.filename, "quiz", [q.model_dump() for q in result])
+        return result
+    except Exception as e:
+        err_msg = str(e)
+        if "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
+            raise HTTPException(status_code=429, detail="Gemini API Quota Exceeded (Free Tier limit: 20 requests/day). Please wait a moment or check your billing plan.")
+        raise HTTPException(status_code=500, detail=f"LLM Error: {err_msg}")
+
+
+@app.post("/mindmap")
+async def mindmap_endpoint(file: UploadFile = File(...)) -> MindMap:
+    try:
+        file_bytes = await file.read()
+        pdf_hash = hashlib.sha256(file_bytes).hexdigest()
+        
+        # Check cache
+        cached = get_cached_item(pdf_hash, "mindmap")
+        if cached:
+            return MindMap(**cached)
+            
+        text = read_pdf(file_bytes)
+        result = make_mindmap(text)
+        
+        # Save cache
+        set_cached_item(pdf_hash, file.filename, "mindmap", result.model_dump())
+        return result
     except Exception as e:
         err_msg = str(e)
         if "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():

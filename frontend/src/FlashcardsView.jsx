@@ -10,7 +10,7 @@ function Flashcard({ front, back }) {
       className="perspective-container" 
       style={{ 
         width: "100%", 
-        height: "150px", 
+        height: "185px", 
         cursor: "pointer",
         position: "relative"
       }}
@@ -39,7 +39,7 @@ function Flashcard({ front, back }) {
             fontWeight: 500, 
             lineHeight: 1.4,
             overflowY: "auto",
-            maxHeight: "85px",
+            maxHeight: "120px",
             width: "100%",
             textAlign: "center"
           }}>
@@ -73,7 +73,7 @@ function Flashcard({ front, back }) {
             fontWeight: 500, 
             lineHeight: 1.4,
             overflowY: "auto",
-            maxHeight: "85px",
+            maxHeight: "120px",
             width: "100%",
             textAlign: "center"
           }}>
@@ -94,7 +94,7 @@ function Flashcard({ front, back }) {
 }
 
 function FlashcardsView({ data, file }) {
-  const [viewMode, setViewMode] = useState("tree") // "tree" or "grid"
+  const [viewMode, setViewMode] = useState("grid") // "tree" or "grid"
 
   // Split cards into two conceptual trunks for diagram tree structure
   const midPoint = Math.ceil(data.length / 2)

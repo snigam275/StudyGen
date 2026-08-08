@@ -11,6 +11,7 @@ import SummaryView from "./SummaryView"
 import FlashcardsView from "./FlashcardsView"
 import QuizView from "./QuizView"
 import Chatbot from "./Chatbot"
+import MindmapView from "./MindmapView"
 
 const DB_NAME = "StudyGenDB"
 const STORE_NAME = "pdfFiles"
@@ -79,9 +80,10 @@ function App() {
   const [summaryResult, setSummaryResult] = useState(null)
   const [flashcardResult, setFlashcardResult] = useState(null)
   const [quizResult, setQuizResult] = useState(null)
+  const [mindmapResult, setMindmapResult] = useState(null)
 
   const [loading, setLoading] = useState(false)
-  const [loadingMode, setLoadingMode] = useState(null) // "summary", "flashcards", "quiz"
+  const [loadingMode, setLoadingMode] = useState(null) // "summary", "flashcards", "quiz", "mindmap"
 
   // Parameter Settings States
   const [numQuestions, setNumQuestions] = useState(5)
@@ -182,6 +184,11 @@ function App() {
     return saved ? JSON.parse(saved) : {}
   })
 
+  const [mindmapCache, setMindmapCache] = useState(() => {
+    const saved = localStorage.getItem("studygen-mindmap-cache")
+    return saved ? JSON.parse(saved) : {}
+  })
+
   // Questions history for repetition limits
   const [quizQuestionsHistory, setQuizQuestionsHistory] = useState(() => {
     const saved = localStorage.getItem("studygen-quiz-questions-history")
@@ -213,6 +220,10 @@ function App() {
   }, [flashcardCache])
 
   useEffect(() => {
+    localStorage.setItem("studygen-mindmap-cache", JSON.stringify(mindmapCache))
+  }, [mindmapCache])
+
+  useEffect(() => {
     localStorage.setItem("studygen-quiz-questions-history", JSON.stringify(quizQuestionsHistory))
   }, [quizQuestionsHistory])
   // -------------------------------------------------------------
@@ -242,21 +253,24 @@ function App() {
       setActiveFile(list.length > 0 ? list[0] : null)
       setSummaryResult(null)
       setFlashcardResult(null)
+      setMindmapResult(null)
       setQuizResult(null)
     } else if (!activeFile && list.length > 0) {
       setActiveFile(list[0])
     }
   }, [uploadedFiles])
 
-  // Load cached summaries and flashcards when activeFile changes
+  // Load cached summaries, flashcards, and mindmaps when activeFile changes
   useEffect(() => {
     if (activeFile) {
       setSummaryResult(summaryCache[activeFile.name] || null)
       setFlashcardResult(flashcardCache[activeFile.name] || null)
+      setMindmapResult(mindmapCache[activeFile.name] || null)
       setQuizResult(null)
     } else {
       setSummaryResult(null)
       setFlashcardResult(null)
+      setMindmapResult(null)
       setQuizResult(null)
     }
   }, [activeFile])
@@ -292,6 +306,7 @@ function App() {
       // Clear previous results for clean state
       setSummaryResult(null)
       setFlashcardResult(null)
+      setMindmapResult(null)
       setQuizResult(null)
 
       setToast({ message: `"${uploadedFile.name}" uploaded successfully!`, type: "success" })
@@ -305,6 +320,7 @@ function App() {
     setActiveFile(fileRecord)
     setSummaryResult(null)
     setFlashcardResult(null)
+    setMindmapResult(null)
     setQuizResult(null)
   }
 
@@ -353,6 +369,7 @@ function App() {
     // Clear previous result for this endpoint specifically
     if (endpoint === "summary") setSummaryResult(null)
     else if (endpoint === "flashcards") setFlashcardResult(null)
+    else if (endpoint === "mindmap") setMindmapResult(null)
     else if (endpoint === "quiz") setQuizResult(null)
 
     // Prepare PDF File object to send
@@ -377,6 +394,7 @@ function App() {
       const errMsg = "PDF File object could not be resolved. Please re-upload your PDF file."
       if (endpoint === "summary") setSummaryResult({ error: errMsg })
       else if (endpoint === "flashcards") setFlashcardResult({ error: errMsg })
+      else if (endpoint === "mindmap") setMindmapResult({ error: errMsg })
       else if (endpoint === "quiz") setQuizResult({ error: errMsg })
       setLoading(false)
       return
@@ -414,6 +432,7 @@ function App() {
       const errMsg = "Could not connect to the backend server. Please verify the backend is running and correct VITE_API_URL is configured."
       if (endpoint === "summary") setSummaryResult({ error: errMsg })
       else if (endpoint === "flashcards") setFlashcardResult({ error: errMsg })
+      else if (endpoint === "mindmap") setMindmapResult({ error: errMsg })
       else if (endpoint === "quiz") setQuizResult({ error: errMsg })
       setLoading(false)
       return
@@ -427,6 +446,9 @@ function App() {
       } else if (endpoint === "flashcards") {
         setFlashcardResult(data)
         setFlashcardCache(prev => ({ ...prev, [activeFile.name]: data }))
+      } else if (endpoint === "mindmap") {
+        setMindmapResult(data)
+        setMindmapCache(prev => ({ ...prev, [activeFile.name]: data }))
       } else if (endpoint === "quiz") {
         setQuizResult(data)
         // Store question texts in history to avoid repetition
@@ -442,7 +464,6 @@ function App() {
         })
       }
 
-
     } else {
       let errMsg = `Server returned error status: ${response ? response.status : 'Unknown'}`
       try {
@@ -455,6 +476,7 @@ function App() {
       const errorObj = { error: errMsg }
       if (endpoint === "summary") setSummaryResult(errorObj)
       else if (endpoint === "flashcards") setFlashcardResult(errorObj)
+      else if (endpoint === "mindmap") setMindmapResult(errorObj)
       else if (endpoint === "quiz") setQuizResult(errorObj)
     }
     setLoading(false)
@@ -490,12 +512,18 @@ function App() {
         onClick={() => {
           if (id === "appearance") {
             toggleTheme()
-          } else if (id === "mind-map") {
-            setActiveTab("flashcards")
-            setFlashcardViewMode("tree")
+          } else if (id === "mind-map" || id === "mindmap") {
+            setActiveTab("mindmap")
+            if (!mindmapResult) generate("mindmap")
           } else {
             setActiveTab(id)
-            if (id === "flashcards") setFlashcardViewMode("grid")
+            if (id === "flashcards") {
+              setFlashcardViewMode("grid")
+            } else if (id === "summary" && !summaryResult) {
+              generate("summary")
+            } else if (id === "quiz" && !quizResult) {
+              generate("quiz")
+            }
           }
         }}
         style={{
@@ -687,6 +715,7 @@ function App() {
             {renderSidebarItem("dashboard", "Dashboard", <LayoutDashboard size={17} />)}
             {renderSidebarItem("recent-files", "Recent Files", <Clock size={17} />)}
             {renderSidebarItem("bookmarks", "Bookmarks", <Bookmark size={17} />)}
+            {renderSidebarItem("mind-map", "Mind Map", <GitFork size={17} />)}
             {renderSidebarItem("trash", "Trash", <Trash2 size={17} />)}
           </div>
 
@@ -1059,9 +1088,21 @@ function App() {
                               }}>
                                 <FileText size={18} />
                               </div>
-                              <div>
-                                <h4 style={{ fontSize: "13.5px", fontWeight: 600, margin: 0 }}>{f.name}</h4>
-                                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                              <div style={{ maxWidth: isMobile ? "140px" : "360px", overflow: "hidden" }}>
+                                <h4 
+                                  title={f.name}
+                                  style={{ 
+                                    fontSize: "13.5px", 
+                                    fontWeight: 600, 
+                                    margin: 0,
+                                    whiteSpace: "nowrap",
+                                    textOverflow: "ellipsis",
+                                    overflow: "hidden"
+                                  }}
+                                >
+                                  {f.name}
+                                </h4>
+                                <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
                                   {f.pages} Pages • Uploaded {f.uploadedAt} • {f.size}
                                 </span>
                               </div>
@@ -1316,8 +1357,8 @@ function App() {
                       <div 
                         className="ai-tool-card"
                         onClick={() => {
-                          setActiveTab("flashcards")
-                          setFlashcardViewMode("tree")
+                          setActiveTab("mindmap")
+                          if (!mindmapResult) generate("mindmap")
                         }}
                         style={{
                           background: "var(--bg-card)",
@@ -1350,9 +1391,10 @@ function App() {
                           </p>
                         </div>
                         <button 
-                          onClick={() => {
-                            setActiveTab("flashcards")
-                            setFlashcardViewMode("tree")
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveTab("mindmap")
+                            if (!mindmapResult) generate("mindmap")
                           }}
                           style={{
                             background: "rgba(51, 255, 208, 0.15)",
@@ -1479,6 +1521,101 @@ function App() {
                     ) : (
                       <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
                         Please upload a PDF first to use the Summary Workspace.
+                      </div>
+                    )
+                  )}
+                </motion.div>
+              )}
+
+              {/* VIEW 2.5: MIND MAP VIEW */}
+              {activeTab === "mindmap" && (
+                <motion.div
+                  key="mindmap"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                    <div>
+                      <h2 style={{ fontSize: "20px", fontWeight: 700, margin: 0 }}>AI Mind Map Workspace</h2>
+                      <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Active: {activeFile ? activeFile.name : "None"}</span>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      {mindmapResult && !mindmapResult.error && (
+                        <button
+                          onClick={() => generate("mindmap")}
+                          style={{
+                            background: "var(--btn-inactive)",
+                            border: "1px solid var(--border-color)",
+                            color: "var(--text-color)",
+                            padding: "6px 12px",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            cursor: "pointer"
+                          }}
+                        >
+                          Re-generate
+                        </button>
+                      )}
+                      
+                      {/* Close button */}
+                      <button 
+                        onClick={() => setActiveTab("dashboard")} 
+                        style={{ background: "var(--btn-inactive)", border: "1px solid var(--border-color)", color: "var(--text-color)", padding: "8px", borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {mindmapResult ? (
+                    mindmapResult.error ? (
+                      <div style={{ padding: "20px", background: "var(--error-bg)", border: "1px solid var(--error-border)", borderRadius: "12px", color: "var(--error-text)", marginTop: "20px" }}>
+                        {mindmapResult.error}
+                      </div>
+                    ) : (
+                      <MindmapView data={mindmapResult} file={activeFile} />
+                    )
+                  ) : (
+                    activeFile ? (
+                      <div style={{
+                        padding: "40px",
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "16px",
+                        textAlign: "center",
+                        marginTop: "20px",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: "12px"
+                      }}>
+                        <GitFork size={40} style={{ color: "var(--primary)", opacity: 0.8 }} />
+                        <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>No Mind Map Generated</h3>
+                        <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: "0 0 10px 0", maxWidth: "320px", lineHeight: 1.5 }}>
+                          Extract a dynamic concept flowchart showing connections in "{activeFile.name}".
+                        </p>
+                        <button
+                          onClick={() => generate("mindmap")}
+                          style={{
+                            background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
+                            color: "#ffffff",
+                            border: "none",
+                            borderRadius: "8px",
+                            padding: "10px 20px",
+                            fontWeight: 700,
+                            cursor: "pointer"
+                          }}
+                        >
+                          Generate Mind Map
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                        Please upload a PDF first to use the Mind Map Workspace.
                       </div>
                     )
                   )}
@@ -1923,10 +2060,19 @@ function App() {
                           return (
                             <tr key={i} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "13.5px", background: isActive ? "rgba(139, 90, 43, 0.04)" : "transparent" }}>
                               <td style={{ padding: "14px 16px", fontWeight: 600 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                  <FileText size={15} style={{ color: "var(--primary)" }} />
-                                  <span>{f.name}</span>
-                                  {isActive && <span style={{ fontSize: "9px", background: "var(--primary-glow)", color: "var(--primary)", padding: "2px 6px", borderRadius: "8px", fontWeight: 700, marginLeft: "6px" }}>ACTIVE</span>}
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", maxWidth: isMobile ? "120px" : "320px", overflow: "hidden" }}>
+                                  <FileText size={15} style={{ color: "var(--primary)", flexShrink: 0 }} />
+                                  <span 
+                                    title={f.name}
+                                    style={{ 
+                                      whiteSpace: "nowrap", 
+                                      textOverflow: "ellipsis", 
+                                      overflow: "hidden"
+                                    }}
+                                  >
+                                    {f.name}
+                                  </span>
+                                  {isActive && <span style={{ fontSize: "9px", background: "var(--primary-glow)", color: "var(--primary)", padding: "2px 6px", borderRadius: "8px", fontWeight: 700, marginLeft: "6px", flexShrink: 0 }}>ACTIVE</span>}
                                 </div>
                               </td>
                               <td style={{ padding: "14px 16px" }}>{f.pages} pages</td>
@@ -2025,9 +2171,18 @@ function App() {
                           return (
                             <tr key={i} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "13.5px" }}>
                               <td style={{ padding: "14px 16px", fontWeight: 600 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                  <FileText size={15} style={{ color: "var(--primary)" }} />
-                                  <span>{f.name}</span>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", maxWidth: isMobile ? "120px" : "320px", overflow: "hidden" }}>
+                                  <FileText size={15} style={{ color: "var(--primary)", flexShrink: 0 }} />
+                                  <span 
+                                    title={f.name}
+                                    style={{ 
+                                      whiteSpace: "nowrap", 
+                                      textOverflow: "ellipsis", 
+                                      overflow: "hidden"
+                                    }}
+                                  >
+                                    {f.name}
+                                  </span>
                                 </div>
                               </td>
                               <td style={{ padding: "14px 16px" }}>{f.pages} pages</td>
@@ -2124,9 +2279,20 @@ function App() {
                         {filterByQuery(uploadedFiles.filter(f => f.isDeleted)).map((f, i) => (
                           <tr key={i} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "13.5px" }}>
                             <td style={{ padding: "14px 16px", fontWeight: 600 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <FileText size={15} style={{ color: "var(--text-muted)" }} />
-                                <span style={{ textDecoration: "line-through", opacity: 0.6 }}>{f.name}</span>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", maxWidth: isMobile ? "120px" : "320px", overflow: "hidden" }}>
+                                <FileText size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                                <span 
+                                  title={f.name}
+                                  style={{ 
+                                    whiteSpace: "nowrap", 
+                                    textOverflow: "ellipsis", 
+                                    overflow: "hidden",
+                                    textDecoration: "line-through",
+                                    opacity: 0.6
+                                  }}
+                                >
+                                  {f.name}
+                                </span>
                               </div>
                             </td>
                             <td style={{ padding: "14px 16px" }}>{f.pages} pages</td>
